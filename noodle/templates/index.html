@@ -10,20 +10,21 @@
   <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
   <title>Noodle NG</title>
   <link rel="stylesheet" type="text/css" href="${tg.url('/css/index.css')}" />
+  <link rel="icon" href="/favicon.png" type="image/png" />
 </head>
 
 <body>
 
 <div style="text-align: center;">
-	<form id="searchform" method="get" action="/search_by_host" name="search">
-		<input id="searchfield" maxlength="2048" size="40" name="query" />
-		<br />
-		<input type="submit" value="noodle" />
-	</form>
+    <form id="searchform" method="get" action="/search_by_host" name="search">
+        <input id="searchfield" maxlength="2048" size="40" name="query" />
+        <br />
+        <input type="submit" value="noodle" />
+    </form>
 </div>
 
 <div style="text-align:right;">
-	Gesamt Share: ${overallShare}
+    Gesamt Share: ${overallShare}
 </div>
 
 <div py:if="changelog"><xi:include href="changelog.html" /></div>
