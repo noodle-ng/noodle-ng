@@ -1,0 +1,13 @@
+﻿========================================================================
+                              Noodle-NG
+========================================================================
+          Noodle. Copyright 2009-2010 The Noodle Developers.
+
+                             DEVELOPERS
+========================================================================
+
+The Noodle Developers are (in alphabetical order):
+
+- Christian Hundt
+- Moritz Schlarb
+- Hinrich Winther
