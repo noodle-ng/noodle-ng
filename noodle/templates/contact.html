@@ -1,0 +1,49 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <xi:include href="master.html" />
+
+<head>
+  <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+  <title>Noodle NG</title>
+  <link rel="stylesheet" type="text/css" href="${tg.url('/css/index.css')}" />
+</head>
+
+<body>
+<h1>Kontakt:</h1>
+<ul style="width: 600px">
+	<li>
+		Hier habt ihr die Möglichkeit uns Rückmeldung zu geben oder Verbesserungsvorschläge unterbreiten.<br />
+	 	Im Formular unten könnt ihr einfach eintragen was ihr uns mitteilen wollt. Einen (Nick-)Name braucht ihr nicht unbedingt angeben, 
+	 	aber wäre schön zu wissen von wem die Mail kommt.<br />
+		Wenn Ihr auf den Button "Senden" klickt, wird sich eurer eMail-Prgramm öffnen mit einer fertigen Mail an uns. <br />
+	 	In der Mail stehen dann die Daten, die ihr in dem Formular unten eingegeben habt. Ihr braucht somit nur noch die eMail versenden und fertig.
+	</li>
+	<li>
+		Ihr könnt uns auch im <a href="http://www-v/site/?page_id=234">IRC</a> besuchen. 
+		Falls ihr ein <a href="http://de.wikipedia.org/wiki/IRC-Client#G.C3.A4ngige_IRC-Clients">Programm</a> installiert habt, 
+		welches mit dem IRC Protokoll umgehen kann dann kommt auf den Server 134.93.63.201 und besucht uns im channel #public bzw. klickt
+		<a href="irc://134.93.63.201/public" >hier</a>.
+	</li>
+</ul>
+<form id="commentform" action="mailto:stwmz-nags@majordomo.uni-mainz.de?subject=[noodlecomment]" method="post" enctype="text/plain">
+	<p>
+		<label for="nickname"><strong>(Nick-)Name:</strong></label><br />
+		<input id="nickname" name="nickname" type="text" size="30" maxlength="30"/>
+	</p>
+	<p>
+		<label for="comment"><strong>Kommentar/Vorschlag:</strong></label><br />
+		<textarea id="comment" name="comment" rows="10" cols="50"></textarea>
+	</p>
+	<p>
+		<input type="reset" value="Reset" />
+		<input type="submit" value="Senden" />
+	</p>
+</form>
+
+</body>
+</html>
+

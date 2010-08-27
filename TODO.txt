@@ -1,0 +1,37 @@
+Crawler:
+=================================================================================
+- Verwenden der zentralen App Config f�r die DB URI in Crawlern und Daemonen
+
+Crawler:
+=================================================================================
+- splitFileName Funktion so �berarbeiten, dass sie Dateien richtig splittet, deren Name mit einem Punkt endet
+  Wenn die Datei keine ext hat sollte ext=Null und nicht ext="" sein
+- benutzen der pysmbc bib
+	
+Frontend:
+=================================================================================
+- Anzeige von mehr als 25 Treffern pro Host ermöglichen
+- Hostinfo, Shareinfo und BrowseHost (sind als Templates schon teilweise da) implementieren
+- der Proxydownloader wird Probleme mit asiatischen und Fremdzeichen haben.
+
+Layout:
+=================================================================================
+- Alternative Ausgabe der Ergebnisse in Listenform, nicht Hostbasiert
+	- über Javascript sortierbar (Typ, Größe, Datum, ...)
+- Evtl. ein Magic Word um die Suche auf zuletzt sichtbare Hosts einzugrenzen (z.B. lastseen:36h)
+- Die Seitenumbruchberechnung (offset / length) liefert manchmal eine Seite zu viel (letzte Seite der Ergebnisse ist einfach leer)
+- Browsen eines Hosts über den Hostinfo Bereich ermöglichen (über JSON AJAX)
+
+Statistik-Daemon:
+=================================================================================
+- Berechnung eines Scores der in der Host-Tabelle gespeichert wird und eine Zahl zwischen 0 und 1 annehmen kann. 
+  Der Score soll ein Maß der Erreichbarkeit eines Hosts sein, wobei 0 der schlechteste Wert ist.
+
+Proxy Downloader:
+=================================================================================
+- URI bei Dateien ohne Endung falsch
+  
+http://stackoverflow.com/questions/2413707/stream-a-file-to-the-http-response-in-pylons
+http://pythonpaste.org/webob/file-example.html
+http://pythonpaste.org/modules/fileapp.html
+http://stackoverflow.com/questions/2796352/serving-files-with-turbogears2

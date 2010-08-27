@@ -1,0 +1,62 @@
+#menuebox {
+position: relative;
+height: 30px;
+}
+.stupidie {
+display: none;
+}
+#menue {
+position:absolute;
+top: 5px;
+left: 0;
+z-index: 200;
+}
+
+#menue .aussen {
+float: left;
+display: block;
+overflow: hidden;
+width: 8em;
+height: 1.3em;
+font-weight: bold;
+text-align: center;
+background-color: #dec79a;
+color: #513913;
+border: 1px solid;
+border-color: #d0843e #78561d #78561d #d0843e;
+}
+#menue .aussen:hover {
+height: auto;
+background-color: #624617;
+color: #fff;
+}
+
+a.innen-1 {
+margin-top: 2px;
+}
+a.innen,
+a.innen-1 {
+display: block;
+width: 7.9em;
+padding: 2px 0;
+text-decoration: none;
+font-weight: normal;
+border-bottom: 1px solid #78561d;
+background-color: #ecd8ae;
+color: #600;
+}
+a:visited.innen,
+a:visited.innen-1 {
+/*background-color: #ecd8ae;
+color:#555;*/
+}
+a:hover.innen,
+a:hover.innen-1 {
+/*background-color: #f7eedb;*/
+/*color: #900;*/
+}
+
+span.menutag {
+display: block;
+cursor: default;
+}

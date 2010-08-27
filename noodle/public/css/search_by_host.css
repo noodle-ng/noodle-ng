@@ -1,0 +1,76 @@
+/* @override http://noodle/css/search_by_host.css */
+
+/* @override http://noodle/css/search_by_host.css */
+
+
+a:link {
+	text-decoration: none;
+	color: #000;
+}
+
+a:visited {
+	text-decoration: none;
+	color: #000;
+}
+
+a:hover {
+	font-weight: bold;
+}
+
+#searchbox {
+	text-align: center;
+}
+
+#host_container {
+	margin-left: 100px;
+	display: table;
+	width: 700px;
+}
+
+#host_name {
+	text-align: center;
+	font-weight: bold;
+	font-size: x-large;
+	background-color: #d5d5d5;
+	position: absolute;
+	margin-top: -40px;
+	width: 550px;
+}
+
+#sidebar_left {
+	background-color: #d5d5d5;
+	display: table-cell;
+	width: 150px;
+	padding-left: 5px;
+}
+
+#host_content {
+	display: table-cell;
+	padding-top: 40px;
+}
+
+#host_fl_folder_caption {
+	padding-left: 0;
+	font-weight: bold;
+}
+
+#host_fl_folder_contents {
+	padding-bottom: 10px;
+}
+
+#host_fl_folder_contents_item {
+	margin-top: 2px;
+}
+
+#host_fl_folder_contents_item_size {
+	float: left;
+	margin-left: 20px;
+	font-style: italic;
+	cursor: help;
+	width: 50px;
+	text-align: right;
+}
+
+#host_fl_folder_contents_item_caption{
+	margin-left: 5px;
+}

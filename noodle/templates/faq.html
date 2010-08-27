@@ -1,0 +1,150 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <xi:include href="master.html" />
+<head>
+  <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+  <title>Noodle NG FAQ</title>
+  
+  <style type="text/css">
+	<!--
+	.tocbox {
+		width: 250px;
+		float:right;
+		border: 1px dotted black;
+	}
+	-->
+	</style>
+  
+</head>
+
+<body>
+
+<div class="tocbox">
+<ul>
+	<li>Allgemeines</li>
+	<ul>
+		<li><a href="#update">Update-Häufigkeit</a></li>
+	</ul>
+	<li>Suche</li>
+	<ul>
+		<li><a href="#negation">Negation</a></li>
+		<li><a href="#magic">Magische Wörter</a></li>
+	</ul>
+	<li>Dateizugriff</li>
+	<ul>
+		<li><a href="#login">Benutzernamen / Passwort</a></li>
+		<li><a href="#firefox-smb">Firefox und smb-Protokoll</a></li>
+	</ul>
+</ul>
+</div>
+
+<h1>FAQ:</h1>
+<!--<p>Hier werden später allgemeine Infos ueber Noodle stehen.
+Momentan ist es aber noch ein Platzhalter.</p>-->
+
+<p>Hier findest du die <strong>Frequently asked Questions</strong> zu Noodle!</p>
+
+<h2>Allgemeines</h2>
+
+<a name="update"></a><h3>Wie häufig wird Noodle aktualisiert?</h3>
+<p>Das Netzwerk der Wohnheime wird alle 3 Stunden gescannt. <br />
+Ein sog. "Crawler" sammelt dabei Informationen über alle Netzwerkfreigaben
+und pflegt daraus eine Datenbank, in der dann gesucht werden kann.</p>
+
+
+<h2>Suche</h2>
+
+<a name="negation"></a><h3>Negation</h3>
+<p>Du kannst auch bestimmte Begriffe ausschließen. Dafür mußt du nur ein -
+vor das Wort setzen. So findest du z.B. mit "Star Trek -Voyager" alle
+Dateien die "Star Trek", nicht jedoch "Voyager" enthalten.</p>
+
+<a name="magic"></a><h3>Magische Wörter:</h3>
+
+<p>Du kannst mit magischen Wörtern nach bestimmten Eigenschaften
+suchen. Zum Beispiel sucht ext:mp4 nach allen Dateien mit der
+Endung .mp4.<br />
+Du kannst mehrere Wörter miteinander kombinieren und so z.B. alle avi
+Dateien die größer als 200MB sind und im Dateinamen "Simpsons"
+enthalten finden:</p><p>"Simpsons ext:avi greater:200"</p>
+<table style="text-align: left; width: 780px; height: 188px;" border="0" cellpadding="2" cellspacing="2">
+	<tbody>
+		<tr>
+			<td><span style="font-weight: bold;">Wort</span></td>
+			<td><span style="font-weight: bold;">Beschreibung</span></td>
+		</tr>
+		<tr>
+			<td>ext</td>
+			<td>Sucht nach einer Dateiendung</td>
+		</tr>
+		<tr>
+			<td>greater</td>
+			<td>Dateien größer als x MiB</td>
+		</tr>
+		<tr>
+			<td>smaller</td>
+			<td>Dateien kleiner als x MiB</td>
+		</tr>
+		<tr>
+			<td>before</td>
+			<td>Dateien die vor einem bestimmten Datum erstellt worden sind suchen - Format: dd.mm.yyyy</td>
+		</tr>
+		<tr>
+			<td>after</td>
+			<td>Dateien die nach einem bestimmten Datum erstellt worden sind suchen</td>
+		</tr>
+		<tr>
+			<td>host</td>
+			<td>Dateien von einem bestimmten Host suchen (DNS-Name). Teile der Adresse reichen aus.</td>
+		</tr>
+		<tr>
+			<td>type</td>
+			<td>
+				Suche nach bestimmten Dateiendungen, die charakteristisch sind für einen Medientyp <br />
+				mögliche Werte: audio / video / multimedia / file / folder <br />
+				<ul>
+					<li>audio: <span py:for="item in audioExt">${item}, </span></li>
+					<li>video: <span py:for="item in videoExt">${item}, </span></li>
+					<li>multimedia: sucht nach allen Elemente aus audio und video</li>
+					<li>file: sucht nur Dateien, in denen die Suchbegriffe vorkommen, aber keine Ordner</li>
+					<li>folder: sucht nur Ordner, in denen die Suchbegriffe vorkommen, aber keine Dateien</li>
+				</ul>
+			</td>
+		</tr>
+	</tbody>
+</table>
+
+<h2>Dateizugriff</h2>
+
+<a name="login"></a><h3>Ich werde nach einem Benutzernamen / Passwort gefragt...</h3>
+<!--Wenn kein anonymer Zugriff möglich ist, sind Benutzername/Passwort meistens: Gast/123Dabei-->
+<p>Falls der anonyme Zugriff nicht möglich ist:</p>
+<table>
+	<tr>
+		<td>Benutzername:</td>
+		<td><code>Gast</code></td>
+	</tr>
+	<tr>
+		<td>Passwort:</td>
+		<td><code>123Dabei</code></td>
+	</tr>
+</table>
+
+<a name="firefox-smb"></a><h3>Firefox bringt unter Windows die Meldung, dass er nicht weiss, wie die Adresse geöffnet werden soll, weil das smb-Protokoll unbekannt ist.</h3>
+<h3>Workaround:</h3>
+<ol>
+	<li>Mit der rechten Maustaste auf den Link klicken und "Linkadresse kopieren" wählen.</li>
+	<li>Den Windows Explorer öffnen und in der Adressleiste den Inhalt der Zwischenablage einfügen.</li>
+	<li>Das <code>smb://</code> einfach durch <code>\\</code> ersetzen und alle <code>/</code> durch <code>\</code> ersetzen.</li>
+	<li>ENTER drücken. ^^</li>
+	<li>done.</li>
+</ol>
+<p>
+z.B. <code>smb://134.93.53.222/Serien2/Futurama%20-%205%20Staffeln</code> ändern in <code>\\134.93.53.222\Serien2\Futurama%20-%205%20Staffeln</code><br />
+Am Besten kopiert ihr euch da nur den Namen des Rechners und klickt euch dann einfach durch die Ordner, also im obigen Beispiel: <code>\\134.93.53.222\</code></p>
+
+</body></html>
