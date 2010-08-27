@@ -1,13 +1,12 @@
-Crawler:
-=================================================================================
-- Verwenden der zentralen App Config für die DB URI in Crawlern und Daemonen
+Noodle-TODO
+
 
 Crawler:
 =================================================================================
-- splitFileName Funktion so überarbeiten, dass sie Dateien richtig splittet, deren Name mit einem Punkt endet
+- splitFileName Funktion so √ºberarbeiten, dass sie Dateien richtig splittet, deren Name mit einem Punkt endet
   Wenn die Datei keine ext hat sollte ext=Null und nicht ext="" sein
 - benutzen der pysmbc bib
-	
+
 Frontend:
 =================================================================================
 - Anzeige von mehr als 25 Treffern pro Host erm√∂glichen

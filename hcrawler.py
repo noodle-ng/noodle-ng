@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: iso-8859-1 -*-
+# -*- coding: utf-8 -*-
 
 from multiprocessing import Pool, Process
 import time
@@ -9,7 +9,16 @@ import sqlalchemy
 from sqlalchemy.orm import sessionmaker, scoped_session
 import noodle.model as model
 
-url = 'sqlite://somedb.db'
+# getting database url from production.ini
+try:
+    import ConfigParser
+    config = ConfigParser.SafeConfigParser()
+    #config.read('development.ini')
+    config.read('production.ini')
+    url = config.get('app:main','sqlalchemy.url',raw=True)
+    if not url: raise
+except:
+    url = 'sqlite:///%(here)s/somedb.db'
 
 credentials = [ ["Gast", "123Dabei"], ["anonymous"] ]
 
