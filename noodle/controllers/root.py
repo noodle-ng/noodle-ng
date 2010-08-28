@@ -51,9 +51,12 @@ class RootController(BaseController):
 
         #Calculates the overall share amount
         overallShare = 0
-        for host in DBSession.query(s.host).all():
-            if host.sharesize > 0:
-                overallShare += host.sharesize
+        try:
+            for host in DBSession.query(s.host).all():
+                if host.sharesize > 0:
+                    overallShare += host.sharesize
+        except:
+            pass
 
         #Renders the page index with overall share amount and changelog
         return dict(page='index', overallShare=s.makePretty(overallShare), changelog=True)
