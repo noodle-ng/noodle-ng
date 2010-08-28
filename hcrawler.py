@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from multiprocessing import Pool, Process
+from multiprocessing import Pool
 import time
 import logging
 from datetime import datetime, timedelta
