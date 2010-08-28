@@ -1,3 +1,1 @@
-﻿Yet to write...
-
-Am besten von demjenigen, der das Turbogears-System damals aufgesetzt hat und das noch beschreiben kann ;)
+﻿Please take a look in the online documentation at http://code.google.com/p/noodle-ng/wiki/INSTALLATION
