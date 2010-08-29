@@ -79,9 +79,11 @@ class share(DeclarativeBase):
     id = Column(Integer, primary_key=True)
     parent_id = Column(Integer, ForeignKey('shares.id'))
     host_id = Column(Integer, ForeignKey('hosts.id'), nullable=False)
-    name = Column(Unicode(256))
+    name = Column(Unicode(256))                     # the filename without extension if the item has one
     type = Column(Unicode(20), nullable=False)
-    date = Column(DateTime)
+    date = Column(DateTime)                         # the creation date of the item which the hosts provides
+    first_seen = Column(DateTime)                   # the date the crawler first indexed the item
+    last_update = Column(DateTime)                  # date the last time the item was updated by the crawler (i.e. size changed)
     meta = relation("meta", uselist=False, backref="share")
     __mapper_args__ = {'polymorphic_on': type}          
     
@@ -106,15 +108,6 @@ class share(DeclarativeBase):
     
     def getShowPath(self):
         return unicode(self.parent.getShowPath()) + "/" + self.name
-    
-    def delTree(self):
-        """ delete self and all children """
-        print "deleting: " + str(self)
-        if hasattr(self, "children"):
-            for child in self.children:
-                child.delTree()
-        session = object_session(self)
-        session.delete(self)
         
     def getPrettySize(self):
         return makePretty(self.size)
@@ -148,7 +141,8 @@ class folder(folderish, content):
 
 class file(content):
     __mapper_args__ = {'polymorphic_identity': 'file'}
-    extension = Column(Unicode(256))
+    extension = Column(Unicode(256))    # file extension, if there is one
+    hash = Column(Unicode(256))         # can hold a hash value to find same files
     
     def getPath(self):
         return self.parent.getPath()
