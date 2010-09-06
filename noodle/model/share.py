@@ -82,8 +82,8 @@ class share(DeclarativeBase):
     name = Column(Unicode(256))                     # the filename without extension if the item has one
     type = Column(Unicode(20), nullable=False)
     date = Column(DateTime)                         # the creation date of the item which the hosts provides
-    first_seen = Column(DateTime)                   # the date the crawler first indexed the item
-    last_update = Column(DateTime)                  # date the last time the item was updated by the crawler (i.e. size changed)
+    first_seen = Column(DateTime, nullable=False)                   # the date the crawler first indexed the item
+    last_update = Column(DateTime, nullable=False)                  # date the last time the item was updated by the crawler (i.e. size changed)
     meta = relation("meta", uselist=False, backref="share")
     __mapper_args__ = {'polymorphic_on': type}          
     
