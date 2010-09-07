@@ -7,9 +7,10 @@ import logging
 import smbc
 buffersize = 4096 # 4KB
 c = smbc.Context()
-
+        
 class FileApp(object):
     def __init__(self, uri):
+        print "init with uri: " + uri
         self.uri = uri
     def __call__(self, environ, start_response):
         res = make_response(self.uri, environ)
@@ -21,6 +22,7 @@ class FileIterable(object):
         self.uri = uri
         self.start = start
         self.stop = stop
+        
     
     def __iter__(self):
         return FileIterator(self.uri, self.start, self.stop)
@@ -33,6 +35,7 @@ class FileIterator(object):
     def __init__(self, uri, start, stop):
         self.uri = uri
         self.fileobj = c.open(self.uri)
+        print "init FileIterator     start: " + str(start) + "   stop: " + str(stop)
 
         if start:
             self.fileobj.seek(start)
@@ -44,6 +47,7 @@ class FileIterator(object):
     def __iter__(self):
         return self
     def next(self):
+        #print "INTERATING"
         if self.length is not None and self.length <= 0:
              raise StopIteration
         chunk = self.fileobj.read(self.chunk_size)
@@ -58,7 +62,6 @@ class FileIterator(object):
 
 def make_response(uri, environ):
     res = Response(conditional_response=True)
-    print uri
     
     f = c.open(uri)
     fs = f.fstat()
@@ -72,17 +75,28 @@ def make_response(uri, environ):
         res.status_int = 206
         res.content_range = req.range.content_range(filesize)
         (start, stop) = req.range.ranges[0]
+        print "filesize: " + str(filesize)
+        print "start: " + str(start)  + "   stop: " + str(stop)
         if not stop:
             stop = filesize
+            headerstop = filesize - 2
+        else:
+            headerstop = stop
         if not start:
             start = 0
-        res.content_length = stop - start + 2
+        
+        #res.content_length = stop - start + 2
+        print stop
+        res.content_range = (start, headerstop, filesize)
+        print res.content_range
         res.app_iter = FileIterable(uri, start=start, stop=stop)
     else:
         # normal transfer
+        print "begin normal transfer"
         res.content_length = filesize
         res.app_iter = FileIterable(uri)
     
+    res.server_protocol = "HTTP/1.0"
     res.content_type='application/octet-stream'
     res.last_modified = last_modified
     res.etag = '%s-%s-%s' % (fs[8], fs[6], hash(f))
