@@ -6,10 +6,16 @@ import logging
 log = logging.getLogger("proxydl")
 
 import smbc
-
-chunk_size = 524.288 # 512KiB
-
 c = smbc.Context()
+
+#chunk_size = 4096 # 4 KiB
+chunk_size = 16384 # 16 KiB
+#chunk_size = 32768 # 32 KiB
+#chunk_size = 65536 # 64 KiB
+#chunk_size = 131072 # 128 KiB
+#chunk_size = 262144 # 256 KiB
+#chunk_size = 524288 # 512 KiB
+#chunk_size = 1048576 # 1 MiB
 
 class FileApp(object):
     
@@ -34,7 +40,6 @@ class FileIterable(object):
         return self.__class__(self.uri, start, stop)
 
 class FileIterator(object):
-    # chunk_size = 4096
     
     def __init__(self, uri, start, stop):
         self.uri = uri
@@ -118,9 +123,9 @@ def make_response(uri, environ):
     log.info("Content-Length: " + str(res.content_length))
     
     res.server_protocol = "HTTP/1.1"
-    res.content_type='application/octet-stream'
+    res.content_type = "application/octet-stream"
     res.last_modified = last_modified
     res.etag = '%s-%s-%s' % (fs[8], fs[6], hash(f))
-    res.headers.add('Content-Disposition', 'attachment; filename="%s"' % str(filename) )
-    res.headers.add('Accept-Ranges', 'bytes')
+    res.headers.add("Content-Disposition", 'attachment; filename="%s"' % str(filename) )
+    res.headers.add("Accept-Ranges", "bytes")
     return res
