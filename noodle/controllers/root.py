@@ -20,6 +20,13 @@ from sqlalchemy import or_, and_
 import subprocess
 import shlex
 
+try:
+    import noodle.lib.smbfileapp as smbfileapp
+    from tg import use_wsgi_app
+    proxyDl = True
+except:
+    proxyDl = False
+
 __all__ = ['RootController']
 
 videoExt = ["avi", "mkv", "mp4", "mpv", "mov", "mpg", "divx"]
@@ -165,29 +172,32 @@ class RootController(BaseController):
         return dict(page='ping', time=result, host=ip)
     
     @expose()
-    def proxyDownload(self, id, tar=False):
+    def proxyDownload(self, id=1617, tar=False):
         
-        # get path to file with ID id from database
-        item = DBSession.query(s.share).filter(s.share.id == id).one()
-        host = item.getHost()
-        service = item.getService()
-        filename = str( item.getShowPath().split("/")[-1] )
-        
-        if service.username and service.username != "anonymous":
-            # uri = "smb://username:password@hostip/path/to/file"
-            uri = u"smb://%s:%s@%s%s" % ( service.username, service.password, host.ip, item.getShowPath() )
-        else:
-            # uri = "smb://hostip/path/to/file"
-            uri = u"smb://%s%s" % ( host.ip, item.getShowPath() )
-        
-        # see if the host is online
-        if not systemPing(host.ip):
-            raise
-        
-        import noodle.lib.smbfileapp as smbfileapp
-        f = smbfileapp.FileApp(uri)
-        from tg import use_wsgi_app
-        return use_wsgi_app(f)
+        if proxyDl==True:
+            
+            # get path to file with ID id from database
+            item = DBSession.query(s.share).filter(s.share.id == id).one()
+            host = item.getHost()
+            service = item.getService()
+            filename = str( item.getShowPath().split("/")[-1] )
+            
+            if service.username and service.username != "anonymous":
+                # uri = "smb://username:password@hostip/path/to/file"
+                uri = u"smb://%s:%s@%s%s" % ( service.username, service.password, host.ip, item.getShowPath() )
+            else:
+                # uri = "smb://hostip/path/to/file"
+                uri = u"smb://%s%s" % ( host.ip, item.getShowPath() )
+            
+            # see if the host is online
+            if not systemPing(host.ip):
+                raise
+            
+            #imports moved to the top
+            f = smbfileapp.FileApp(uri)
+            return use_wsgi_app(f)
+        else: #proxyDl not enabled
+            return "<p><strong>proxyDownloader is (currently) not available on this system!</strong><br /><em>Sorry.</em></p>\n"
 
 def search(query=None):
     """ process the query string and return a compiled query """

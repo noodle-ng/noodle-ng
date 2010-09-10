@@ -7,7 +7,8 @@ log = logging.getLogger("proxydl")
 
 import smbc
 
-chunk_size = 4096 # 4KB
+chunk_size = 524.288 # 512KiB
+
 c = smbc.Context()
 
 class FileApp(object):
@@ -39,12 +40,11 @@ class FileIterator(object):
         self.uri = uri
         self.fileobj = c.open(self.uri)
         log.info("init FileIterator     start: " + str(start) + "   stop: " + str(stop))
-
+        
         if start:
             self.fileobj.seek(start)
         if stop is not None:
-            self.length = stop - start + 2  # don't know why the response is 2 bits short.
-                                            # need to look into that
+            self.length = stop - start
         else:
             self.length = None
     
@@ -77,38 +77,45 @@ def make_response(uri, environ):
     #log.debug(environ)
     req = Request(environ)
     log.debug("Incoming request: \n" + str(req))
+    
     if req.range:
+        # We have some very strange values here!
+        # WebOb gives us a wrong stop value, so we need to add 2 bytes
+        # Then everything is fine!
+        # Only `Range: bytes=-500` (the last 500 bytes) does not work, but that's not often used
         log.info("begin ranged transfer")
         res.status_int = 206
         res.content_range = req.range.content_range(filesize)
-        (start, stop) = req.range.ranges[0]
+        (start, stop) = req.range.range_for_length(filesize)
         
         log.info("filesize: " + str(filesize))
         log.info("start: " + str(start)  + "   stop: " + str(stop))
         
+        log.info("incoming bounds: start: " + str(start)  + "   stop: " + str(stop))
         if not stop:
-            stop = filesize # because python exlcudes last byte
-            stop_header = stop - 2 # because header includes last byte
+            log.info("setting stop point")
+            stop = filesize # because python excludes last byte
         else:
-            stop_header = stop - 2
+            stop = stop + 2
         
         if not start:
+            log.info("setting start point")
             start = 0
-            
-        log.info("start: " + str(start)  + "   stop: " + str(stop))
         
-        res.content_range = (start, stop_header, filesize)
+        log.info("corrected bounds: start: " + str(start)  + "   stop: " + str(stop))
+        
         log.info("Content-Range: " + str(res.content_range))
         
         res.app_iter = FileIterable(uri, start=start, stop=stop)
         
         res.content_length = stop - start
-        log.info("Content-Length: " + str(res.content_length))
+    
     else:
         log.info("begin normal transfer")
         res.app_iter = FileIterable(uri)
         res.content_length = filesize
-        log.info("Content-Length: " + str(res.content_length))
+    
+    log.info("Content-Length: " + str(res.content_length))
     
     res.server_protocol = "HTTP/1.1"
     res.content_type='application/octet-stream'
