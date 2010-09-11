@@ -84,10 +84,6 @@ def make_response(uri, environ):
     log.debug("Incoming request: \n" + str(req))
     
     if req.range:
-        # We have some very strange values here!
-        # WebOb gives us a wrong stop value, so we need to add 2 bytes
-        # Then everything is fine!
-        # Only `Range: bytes=-500` (the last 500 bytes) does not work, but that's not often used
         log.info("begin ranged transfer")
         res.status_int = 206
         res.content_range = req.range.content_range(filesize)
@@ -96,18 +92,7 @@ def make_response(uri, environ):
         log.info("filesize: " + str(filesize))
         log.info("start: " + str(start)  + "   stop: " + str(stop))
         
-        log.info("incoming bounds: start: " + str(start)  + "   stop: " + str(stop))
-        if not stop:
-            log.info("setting stop point")
-            stop = filesize # because python excludes last byte
-        else:
-            stop = stop + 2
-        
-        if not start:
-            log.info("setting start point")
-            start = 0
-        
-        log.info("corrected bounds: start: " + str(start)  + "   stop: " + str(stop))
+        # Correction of bounds no longer needed
         
         log.info("Content-Range: " + str(res.content_range))
         
