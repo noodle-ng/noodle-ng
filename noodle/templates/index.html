@@ -12,7 +12,7 @@
   <link rel="stylesheet" type="text/css" href="${tg.url('/css/index.css')}" />
 </head>
 
-<body>
+<body onLoad="javascript:document.search.query.focus()">
 
 <div style="text-align: center;">
     <form id="searchform" method="get" action="/search_by_host" name="search">
