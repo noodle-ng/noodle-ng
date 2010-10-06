@@ -20,7 +20,17 @@ try:
 except:
     url = 'sqlite:///%(here)s/somedb.db'
 
-credentials = [ ["Gast", "123Dabei"], ["anonymous"] ]
+import os
+import smbc
+credentials = [ ["Gast", "123Dabei"], ["anonymous", ""] ]
+
+# smbc_type
+# 3 = Share
+# 7 = Directory
+# 8 = File
+SMBC_SHARE =  3
+SMBC_FOLDER = 7
+SMBC_FILE =   8
 
 def crawl(ip=False):
     
@@ -72,86 +82,134 @@ def crawl(ip=False):
                     break
         return qfolder
     
+    
     def analyze(ip):
-        """ analyze a given host and return a representation of the filesystem """
+        """ Analyze the given host and return filesystem representation """
         
-        logging.debug(str(ip) + " running smbclient" )
+        # In the future, def analyze(ip,credentials) where credentials is [username,password] 
+        # that are retrieved from a database could be used
         
-        # get list of shares
-        list = []
-        for credential in credentials:
-            if len(list) > 0:
-                break
-            
-            if credential[0] != "anonymous":
-                username = credential[0]
-                password = credential[1]
-                s = commands.getstatusoutput('smbclient -gL ' + ip + ' ' + "-U " + username + "%" + password )[1].split('\n')
-            else:
-                username = "anonymous"
-                password = ""
-                s = commands.getstatusoutput('smbclient -gL ' + ip + ' -N')[1].split('\n')
-            
-            for i in s:
-                if 'Disk|' in i:
-                    if username != "anonymous":
-                        list.append(["-U " + username + "%" + password, i.split('|')[1].replace("'", "'\\''")])
-                    else:
-                        list.append(["-N", i.split('|')[1].replace("'", "'\\''")])
-        # if we got no shares due to invalid incredentials break
-        if len(list) == 0:
+        logging.info("analyzing "+ str(ip) +" with pysmbc")
+        
+        shares = []
+        for (username,password) in credentials:
+            if len(shares) == 0:
+                if username == 'anonymous':
+                    logging.info('trying anonymous')
+                    c = smbc.Context()
+                else:
+                    logging.info('trying with %s:%s' %(username,password))
+                    def authfkt(server, share, workgroup, user, passwd):
+                        return ("WORKGROUP", username, password)
+                    c = smbc.Context(auth_fn=authfkt)
+                try:
+                    host = c.opendir('smb://%s/' % ip)
+                    #logging.debug(host)
+                    shares = host.getdents()
+                    #logging.debug(shares)
+                    break
+                except:
+                    logging.info('failed. trying again')
+                    continue
+        
+        if len(shares) == 0:
+            logging.debug('I have found no (accessible) samba share here on %s' % ip)
             return False
         
-        logging.debug(str(ip) + " analyzing smbclient output" )
+        #logging.debug('I found something on %s:\n%s' % (ip,shares))
+        #logging.debug('I came there as %s:%s' % (username,password))
+        
         myService = serviceSMB()
-        myService.username = username
-        myService.password = password
-        for login, share in list:
-            myFolder = folder()
-            myFolder.name = share
-            myService.children.append(myFolder)
-            s = commands.getstatusoutput(r"smbclient  '\\%s\%s'  %s -c 'recurse ; ls *'  2>/dev/null " % (ip, share, login))
-            s = s[1].decode('utf-8')
-            cfolder = myFolder
-            for line in s.splitlines():
-                #print line.encode('ascii', 'replace')
-                reFolder = re.findall(r"^((\\[^\\^\s]+(\s{1,2}[^\\^\s]+)*)+)", line)
-                if len(reFolder) > 0:
-                    myFolder = getFolder(myService, u"\\" + share + reFolder[0][0])
-                if not myFolder:
-                    # because we can not parse the output of smbclient right it can happen, that we do not have the right directory structure
-                    # this is only a dirty hack to at least get all parsable data and only to throw away the data we can't parse
-                    logging.warning("skipping due to folder not Found")
+        myService.username = unicode(username)
+        myService.password = unicode(password)
+        #myService = ''
+        
+        def walker(dir,path):
+            # dir must be smbc.Dir
+            """ This function walks recursively through the directory you give him
+            and returns folder()-Objects according to the model.
+            
+            For the sake of OOP this should be a class..."""
+            #logging.info(path)
+            
+            theFolder = folder()
+            theFolder.name = unicode(path.split('/')[-2],'utf-8')
+            
+            #logging.debug("%s in %s" %(dir,path))
+            #logging.debug("walking through %s:" %path.split('/')[-2])
+            #theFolder = ''
+            
+            #logging.debug(dir.getdents())
+            
+            direntries = dir.getdents()
+            for entry in direntries:
+                #logging.debug(entry)
+                if entry.name.startswith('.'):
+                    #Skipping . , .. and hidden files
                     continue
-                reData = re.findall(r"^  (([^\s]+\s{1,2})+)\s+(\w{0,3})\s+(\d+)\s+(\w+\s+\w+\s+\d{1,2}\s+\d{1,2}:\d{1,2}:\d{1,2}\s\d{4})$", line)
-                if len(reData) > 0:
-                    name, trash, mode, size, date = reData[0]
-                    name = name[0:-2] # very dirty hack. Need to change the re
-                    date = getDate(date)
-                    # Modes:
-                    # H hidden
-                    # R read only
-                    # A Archive
-                    if "D" in mode:
-                        # this entry is a Folder
-                        if name == ".": # myFolder
-                            myFolder.date = date
-                        elif name == "..":
-                            pass
-                        else:
-                            newFolder = folder()
-                            newFolder.name = name
-                            newFolder.date = date
-                            myFolder.children.append(newFolder)
-                    else:
-                        # ok, it is a file
-                        newFile = file()
-                        name, extension = splitFileName(name)
-                        newFile.name = name
-                        newFile.extension = extension
-                        newFile.date = date
-                        newFile.size = size
-                        myFolder.children.append(newFile)
+                elif entry.smbc_type == SMBC_FOLDER:
+                    # a subdirectory
+                    newPath = path + entry.name + '/'
+                    try:
+                        newDir = c.opendir(newPath)
+                    except:
+                        #logging.debug('Opening %s went wrong' % newPath)
+                        continue
+                    myFolder = walker(newDir,newPath)
+                    theFolder.children.append(myFolder)
+                    #theFolder += entry.name+'\n'+myFolder+'\n'
+                    
+                elif entry.smbc_type == SMBC_FILE:
+                    # a file
+                    myFile = file()
+                    #myFile = ''
+                    
+                    name,extension = os.path.splitext(entry.name)
+                    extension = extension[1:]
+                    myFile.name = unicode(name,'utf-8')
+                    myFile.extension = unicode(extension,'utf-8')
+                    #myFile = name+'.'+extension
+                    try:
+                        f = c.open(path+entry.name)
+                    except:
+                        #logging.debug('Opening %s went wrong' % path+entry.name)
+                        continue
+                    fs = f.fstat()
+                    myFile.size = fs[6]
+                    try:
+                        myFile.date = datetime.fromtimestamp(fs[8]) # mtime
+                    except:
+                        myFile.date = datetime.now()
+                    #myFile += '\t%s\t%s'%(fs[6],fs[8])
+                    theFolder.children.append(myFile)
+                    #theFolder += '\t'+entry.name+'\n'
+                else:
+                    # a nothing
+                    # "Uuuhhuuuuuuuuuu...."
+                    continue
+                
+            return theFolder
+        
+        for share in shares:
+            logging.info(share.name)
+            if share.smbc_type == SMBC_SHARE:
+                path = "smb://%s/%s/" % (ip,share.name)
+                #logging.info(path)
+                try:
+                    dir = c.opendir(path)
+                    #logging.debug('In %s I have %s' % (share.name,dir.getdents()))
+                except:
+                    # So this share is not accessible, who cares! Next one please!
+                    continue
+                # Now we have to loop through all the content of share
+                # So we start the walker
+                theFolder = walker(dir,path)
+                #logging.debug(theFolder)
+                theFolder.name = unicode(share.name)
+                myService.children.append(theFolder)
+                #myService += theFolder
+        
+        #logging.info(myService)
         return myService
     
     def mergeTree(pdb, premote):
@@ -282,7 +340,6 @@ def debug(ip):
     from sqlalchemy.orm import sessionmaker, scoped_session
     import noodle.model as model
     
-    logging.debug(str(ip) + " analyzing Host")
     
     verbose = False
     engine = sqlalchemy.create_engine(url, echo=verbose)
@@ -291,7 +348,6 @@ def debug(ip):
     model.init_model(engine)
     model.metadata.create_all(engine)
     crawl(ip)
-
 
 if __name__ == '__main__':
     
