@@ -1,0 +1,59 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <xi:include href="master.html" />
+
+<head>
+  <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+  <title>Noodle NG</title>
+  <link rel="stylesheet" type="text/css" href="${tg.url('/css/filelist.css')}" />
+  <script type="text/javascript" src="${tg.url('/js/MochiKit/MochiKit.js')}"></script>
+  <script type="text/javascript" src="${tg.url('/js/pingHost.js')}"></script>
+</head>
+
+<body>
+<div id="searchbox" style="text-align: center;">
+	<form id="searchform" method="get" action="/search_by_file" name="search">
+		<input id="searchfield" maxlength="2048" size="40" name="query" value="${query}"/>
+		<br />
+		<input id="searchbutton" type="submit" value="search" />
+	</form>
+</div>
+
+<table id="filelisting" summary="File list">
+	<thead>
+		<tr>
+			<th scope="col" style="width:25px"></th>
+			<th scope="col" style="width:38px"></th>
+			<th scope="col">Name</th>
+			<th scope="col" style="width:80px; text-align:center;">Groesse</th>
+			<th scope="col" style="width:100px; text-align:center;">Datum</th>
+			<th scope="col" style="width:120px; text-align:center;">Host</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr py:for="file in files">
+			<td id="file_online"><img name="ping_Host" value="${file.host.ip}" src="${tg.url('/images/ping_grey.png')}" /></td>
+			<td id="file_icon"><img name="media type" src="${tg.url('/images/file_icons/' + file.mediaType + '_25x25.jpg')}" /></td>
+			<td id="file_name"><a href="${tg.url( '/proxyDownload?id=' + str(file.id) )}">${file.nameWithExt}</a></td>
+			<td id="file_size">${file.prettySize}</td>
+			<td id="file_date"><span py:if="file.date" py:replace="file.date.strftime('%d.%m.%Y')" /></td>
+			<td id="file_host"><a href="${smbURLprefix}${file.host.name}"><span py:replace="file.host.name.split('.')[0].upper()" /></a></td>
+		</tr>
+	</tbody>
+</table>
+
+<center>
+	NoooOOOOooodle
+	<br />
+	<span py:for="page in pages">
+		<a py:if="not page['current']" href="${tg.url('/search_by_file?query=' + query + '&amp;offset=' + str(page['offset']))}">${page["number"]}</a>
+		<span py:if="page['current']">${page["number"]}</span>
+	</span>
+</center>
+
+</body>
+</html>

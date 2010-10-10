@@ -12,6 +12,7 @@ from noodle.controllers.error import ErrorController
 import noodle.widgets.search_form as search_form
 
 import noodle.model.share as s
+from noodle.model.share import audioExt, videoExt, mediaExt
 from noodle.model.share import ipToInt, intToIp
 
 from sqlalchemy.sql.expression import distinct
@@ -28,12 +29,6 @@ except:
     proxyDl = False
 
 __all__ = ['RootController']
-
-videoExt = ["avi", "mkv", "mp4", "mpv", "mov", "mpg", "divx"]
-audioExt = ["mp3", "aac", "ogg", "m4a"]
-
-mediaExt = videoExt[:]
-mediaExt.extend(audioExt)
 
 class RootController(BaseController):
     """
@@ -83,6 +78,43 @@ class RootController(BaseController):
     def contact(self):
         """Displays contact page"""
         return dict(page='contact')
+    
+    @expose('noodle.templates.search_by_file')
+    def search_by_file(self, query=None, offset=0, length=100, **kw):
+        """Handle the 'search_by_file' page."""
+        
+        #Process keywords
+        query += processKW(kw)["query"]
+        
+        offset = int(offset)
+        length = int(length)
+        
+        q = search(query)
+        
+        files = q[offset:length+offset]
+        
+        # calculate the number of pages
+        numberOfFiles = len( q.from_self(s.file.id).all() )
+        pages = []
+        i = 0
+        n = 1
+        while i <= numberOfFiles:
+            pages.append({})
+            pages[-1]["number"] = n
+            pages[-1]["offset"] = i
+            pages[-1]["current"] = offset == i
+            n += 1
+            i += length
+        
+        if "MSIE" in request.user_agent:
+            userAgent = "internetExplorer"
+            smbURLprefix = "\\\\"
+        else:
+            userAgent = "mozilla"
+            smbURLprefix = "smb://"
+        
+        return dict(page='search_by_file', query=query, files=files, pages=pages, smbURLprefix=smbURLprefix)
+        
 
     @expose('noodle.templates.search_by_host')
     def search_by_host(self, query=None, offset=0, length=10, cutoff=25, **kw):
@@ -141,7 +173,7 @@ class RootController(BaseController):
                     folder.resultset.append(item)
                 host.resultset.append(folder)
 
-        return dict(page='search', hosts=hosts, compiledQuery=q, query=query, offset=offset, lenght=length, pages=pages, numberOfHosts=numberOfHosts)
+        return dict(page='search_by_host', hosts=hosts, compiledQuery=q, query=query, offset=offset, lenght=length, pages=pages, numberOfHosts=numberOfHosts)
 
     @expose('noodle.templates.hostinfo')
     def hostInfo(self, hostID):

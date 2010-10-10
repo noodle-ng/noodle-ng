@@ -3,14 +3,14 @@ doc = currentDocument();
 // Diese Funktion wird nach dem Ping aufgerufen (Callback)
 // und wertet das Ergebnis aus
 var gotPing = function (data) {
-	img_online  = IMG({src: "/images/ping_online.png"});
-	img_offline = IMG({src: "/images/ping_offline.png"});
 	for (var i = 0; i < ping_Hosts_pending.length; i++){
 		if ( ping_Hosts_pending[i].getAttribute('value') == data["host"]) {
 			if (data["time"] == false){
+				img_offline = IMG({src: "/images/ping_offline.png"});
 				swapDOM(ping_Hosts_pending[i], img_offline);
 			}
 			else {
+				img_online  = IMG({src: "/images/ping_online.png"});
 				swapDOM(ping_Hosts_pending[i], img_online);
 			};
 		};

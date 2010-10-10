@@ -9,6 +9,12 @@ from sqlalchemy.types import Integer, Unicode, DateTime, Float, Binary, Numeric
 
 from noodle.model import DeclarativeBase, metadata, DBSession
 
+videoExt = ["avi", "mkv", "mp4", "mpv", "mov", "mpg", "divx", "vdr"]
+audioExt = ["mp3", "aac", "ogg", "m4a", "wav"]
+
+mediaExt = videoExt[:]
+mediaExt.extend(audioExt)
+
 def makePretty(value):
     ''' convert bit values in human readable form '''
     steps = [ (1024,"KiB"), (1048576, "MiB"), (1073741824, "GiB"), (1099511627776, "TiB") ]
@@ -114,6 +120,24 @@ class share(DeclarativeBase):
     
     prettySize = property(getPrettySize)
     
+    def getNameWithExt(self):
+        if hasattr(self, "extension"):
+            if self.extension != None:
+                return self.name + u"." + self.extension
+        return self.name
+    
+    nameWithExt = property(getNameWithExt)
+    
+    def getMediaType(self):
+        if hasattr(self, "extension"):
+            if self.extension in videoExt:
+                return "video"
+            elif self.extension in audioExt:
+                return "audio"
+        return "file"
+    
+    mediaType = property(getMediaType)
+    
     def getCredentials(self):
         service = self.getService()
         creds = {}
@@ -130,6 +154,9 @@ class folderish(share):
     __mapper_args__ = {'polymorphic_identity': 'folderish'}
     children = relation("share", cascade="all", backref=backref('parent', remote_side="share.id"))
     #children = relation("share", cascade="all, delete-orphan", backref=backref('parent', remote_side="share.id"))
+    def getMediaType(self):
+        return "folder"
+    mediaType = property(getMediaType)
     
 class content(share):
     __mapper_args__ = {'polymorphic_identity': 'content'}
