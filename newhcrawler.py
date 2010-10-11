@@ -261,8 +261,6 @@ def crawl(ip=False):
                 session.delete(dblist[key])
                 
         for key in remotelist:
-            remotelist[key].first_seen = datetime.now()
-            remotelist[key].last_update = datetime.now()
             logging.info(remotelist[key])
             pdb.children.append(remotelist[key])
     
