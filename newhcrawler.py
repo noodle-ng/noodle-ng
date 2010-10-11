@@ -141,6 +141,11 @@ def crawl(ip=False):
             
             #logging.debug(dir.getdents())
             
+            
+            # We get Folders and Files alphabetically sorted but totally mixed up here!
+            # If we want to fix it, the question is: 
+            # Fix it here (By looping two times through direntries)
+            # or fix it in merge, when writing to the database ??
             direntries = dir.getdents()
             for entry in direntries:
                 #logging.debug(entry)
@@ -215,6 +220,9 @@ def crawl(ip=False):
     def mergeTree(pdb, premote):
         """ merges the tree from the db (pdb) with the new crawled tree (premote) """
         
+        # Propably it would be very improving to use merge() here!
+        # http://www.sqlalchemy.org/docs/05/session.html#merging
+        
         def generateList(tree):
             list = {}
             for child in tree.children:
@@ -229,20 +237,35 @@ def crawl(ip=False):
         dblist = generateList(pdb)
         remotelist = generateList(premote)
         
+        #logging.info(dblist)
+        
         for key in dblist:
             if key in remotelist:
-                
                 if hasattr(dblist[key], "children"):
                     mergeTree(dblist[key], remotelist[key])
+                
+                if (dblist[key].size != remotelist[key].size) or (dblist[key].date != remotelist[key].date):
+                    logging.info("size or date of %s changed" % remotelist[key].name)
+                    opfer = pdb.children[pdb.children.index(dblist[key])]
+                    opfer.last_update = datetime.now()
+                    opfer.date = remotelist[key].date
+                    opfer.size = remotelist[key].size
+                    logging.info(session.dirty)
+                    logging.info(remotelist[key])
+                    pdb.children[pdb.children.index(dblist[key])] = session.merge(opfer)
                 del remotelist[key]
                 
             else:
+                logging.info(dblist[key])
                 del pdb.children[ pdb.children.index(dblist[key]) ]
                 session.delete(dblist[key])
                 
         for key in remotelist:
+            remotelist[key].first_seen = datetime.now()
+            remotelist[key].last_update = datetime.now()
+            logging.info(remotelist[key])
             pdb.children.append(remotelist[key])
-        
+    
     if not ip:
         raise
     
@@ -363,7 +386,8 @@ if __name__ == '__main__':
     logging.info("setting up worker pool")
     pool = Pool(processes=10, initializer=setupProcess)
     logging.info("beginn crawling")
-    hostlist = ["134.93.51.1","134.93.51.36","134.93.68.68"]
+    #hostlist = ["134.93.51.1","134.93.51.36","134.93.68.68"]
+    hostlist = ["134.93.51.1",]
     for host in hostlist:
         #pool.apply_async(commitJob, [host], callback=report)
         debug(host)
