@@ -93,6 +93,11 @@ class share(DeclarativeBase):
     meta = relation("meta", uselist=False, backref="share")
     __mapper_args__ = {'polymorphic_on': type}          
     
+    def __init__(self, first_seen=datetime.now(), last_update=datetime.now()):
+        ''' set the first_seen and last_update fields for convenience sake '''
+        self.first_seen = first_seen
+        self.last_update = last_update
+    
     def __before_commit__(self, session=False, status=False):
         if session and status == "new":
             if self.host == None:
