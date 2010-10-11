@@ -54,7 +54,7 @@ class FileIterator(object):
             self.length = None
     
     def __iter__(self):
-        return self
+        return self.fileobj
     
     def next(self):
         #log.info("INTERATING")
