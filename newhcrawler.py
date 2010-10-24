@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker, scoped_session
 import noodle.model as model
+from noodle.lib.utils import pingSMB
 
 # getting database url from production.ini
 try:
@@ -279,12 +280,7 @@ def crawl(ip=False):
     
     if getDnsEntry(ip):
         # check if the server is running a smb server  // timeout 1s
-        sd = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
-        sd.settimeout(1)
-        try:
-            sd.connect((ip, 445))
-            sd.close()
-        except:
+        if not pingSMB(ip, timeout=1):
             return
         
         session = model.DBSession()

@@ -11,7 +11,15 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.sql import select
 import noodle.model as model
 
-url = 'sqlite://somedb.db'
+try:
+    import ConfigParser
+    config = ConfigParser.SafeConfigParser()
+    #config.read('development.ini')
+    config.read('production.ini')
+    url = config.get('app:main','sqlalchemy.url',raw=True)
+    if not url: raise
+except:
+    url = 'sqlite:///%(here)s/somedb.db'
 
 def calculateShare(host_id):
     session = model.DBSession()

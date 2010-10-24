@@ -11,6 +11,8 @@ from noodle.model import DBSession, metadata
 from noodle.controllers.error import ErrorController
 import noodle.widgets.search_form as search_form
 
+from noodle.lib.utils import pingSMB
+
 import noodle.model.share as s
 from noodle.model.share import audioExt, videoExt, mediaExt
 from noodle.model.share import ipToInt, intToIp
@@ -197,7 +199,7 @@ class RootController(BaseController):
     @expose('json')
     def ping(self, ip=False):
         host = DBSession.query(s.host).filter(s.host.ip_as_int == ipToInt(ip)).first()
-        result = systemPing(ip)
+        result = pingSMB(ip)
         if host:
             DBSession.add(s.ping(host, result))
             DBSession.commit()
@@ -222,7 +224,7 @@ class RootController(BaseController):
                 uri = u"smb://%s%s" % ( host.ip, item.getShowPath() )
             
             # see if the host is online
-            if not systemPing(host.ip):
+            if not systemSMB(host.ip):
                 raise
             
             #imports moved to the top
@@ -321,17 +323,3 @@ def generatePath(obj, userAgent):
         return '\\\\' + obj.getPath()
     else:
         return "smb://" + obj.getPath()
-
-def systemPing(ip):
-    """ checks if the given host is online and has a running smb server using pythons sockets"""
-    import commands
-    import socket as sk
-
-    sd = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
-    sd.settimeout(1)
-    try:
-        sd.connect((ip, 445))
-        sd.close()
-        return 1
-    except:
-        return False
