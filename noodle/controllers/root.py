@@ -82,7 +82,7 @@ class RootController(BaseController):
         return dict(page='contact')
     
     @expose('noodle.templates.search_by_file')
-    def search_by_file(self, query=None, offset=0, length=100, **kw):
+    def search_by_file(self, query=None, offset=0, length=100, sortby="filename", sortorder="asc", **kw):
         """Handle the 'search_by_file' page."""
         
         #Process keywords
@@ -93,7 +93,19 @@ class RootController(BaseController):
         
         q = search(query)
         
-        files = q[offset:length+offset]
+        sortAssoc = {"filename": s.file.name,
+                     "filesize": s.file.size,
+                     "date": s.file.date,}
+        
+        if sortby:
+            if sortorder == "asc":
+                files = q.order_by(sortAssoc[sortby])[offset:length+offset]
+            elif sortorder == "desc":
+                files = q.order_by(sortAssoc[sortby].desc())[offset:length+offset]
+            else:
+                raise
+        else:
+            files = q[offset:length+offset]
         
         # calculate the number of pages
         numberOfFiles = len( q.from_self(s.file.id).all() )
@@ -115,7 +127,7 @@ class RootController(BaseController):
             userAgent = "mozilla"
             smbURLprefix = "smb://"
         
-        return dict(page='search_by_file', query=query, files=files, pages=pages, smbURLprefix=smbURLprefix)
+        return dict(page='search_by_file', query=query, files=files, pages=pages, smbURLprefix=smbURLprefix, offset=offset, sortby=sortby, sortorder=sortorder)
         
 
     @expose('noodle.templates.search_by_host')
