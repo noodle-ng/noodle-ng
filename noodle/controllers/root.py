@@ -223,10 +223,6 @@ class RootController(BaseController):
                 # uri = "smb://hostip/path/to/file"
                 uri = u"smb://%s%s" % ( host.ip, item.getShowPath() )
             
-            # see if the host is online
-            if not systemSMB(host.ip):
-                raise
-            
             #imports moved to the top
             f = smbfileapp.FileApp(uri)
             return use_wsgi_app(f)

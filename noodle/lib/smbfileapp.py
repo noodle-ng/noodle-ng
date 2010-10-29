@@ -1,8 +1,11 @@
 # Source: http://pythonpaste.org/webob/file-example.html
 from webob import Request, Response
 from webob.byterange import Range
+from webob.exc import HTTPOk, HTTPGatewayTimeout
 import os
 import logging
+from noodle.lib.utils import pingSMB
+
 log = logging.getLogger("proxydl")
 
 import smbc
@@ -20,7 +23,7 @@ chunk_size = 16384 # 16 KiB
 class FileApp(object):
     
     def __init__(self, uri):
-        log.info("init with uri: " + uri)
+        log.debug("init with uri: " + uri)
         self.uri = uri
     def __call__(self, environ, start_response):
         res = make_response(self.uri, environ)
@@ -44,7 +47,7 @@ class FileIterator(object):
     def __init__(self, uri, start, stop):
         self.uri = uri
         self.fileobj = c.open(self.uri)
-        log.info("init FileIterator     start: " + str(start) + "   stop: " + str(stop))
+        log.debug("init FileIterator     start: " + str(start) + "   stop: " + str(stop))
         
         if start:
             self.fileobj.seek(start)
@@ -74,38 +77,37 @@ def make_response(uri, environ):
     
     res = Response(conditional_response=True)
     
+    # check if the host is online. If not raise an http error
+    if not pingSMB( parseSMBuri(uri)["host"] ):
+        return HTTPGatewayTimeout("Host is currently offline. You may try again at a later time.")
+    
     f = c.open(uri)
     fs = f.fstat()
     filesize = fs[6]
     last_modified = fs[8] # mtime
     filename = uri.split("/")[-1]
-    #log.debug(environ)
     req = Request(environ)
     log.debug("Incoming request: \n" + str(req))
     
     if req.range:
-        log.info("begin ranged transfer")
+        log.debug("begin ranged transfer")
         res.status_int = 206
         res.content_range = req.range.content_range(filesize)
         (start, stop) = req.range.range_for_length(filesize)
         
-        log.info("filesize: " + str(filesize))
-        log.info("start: " + str(start)  + "   stop: " + str(stop))
-        
-        # Correction of bounds no longer needed
-        
-        log.info("Content-Range: " + str(res.content_range))
+        log.debug("filesize: " + str(filesize))
+        log.debug("start: " + str(start)  + "   stop: " + str(stop))
+        log.debug("Content-Range: " + str(res.content_range))
         
         res.app_iter = FileIterable(uri, start=start, stop=stop)
-        
         res.content_length = stop - start
     
     else:
-        log.info("begin normal transfer")
+        log.debug("begin normal transfer")
         res.app_iter = FileIterable(uri)
         res.content_length = filesize
     
-    log.info("Content-Length: " + str(res.content_length))
+    log.debug("Content-Length: " + str(res.content_length))
     
     res.server_protocol = "HTTP/1.1"
     res.content_type = "application/octet-stream"
@@ -114,3 +116,18 @@ def make_response(uri, environ):
     res.headers.add("Content-Disposition", 'attachment; filename="%s"' % str(filename) )
     res.headers.add("Accept-Ranges", "bytes")
     return res
+
+def parseSMBuri(uri):
+    # uri scheme: smb://host/path or smb://username:password@host/path
+    uri = uri.split("//")[1]
+    uri_netloc = uri.split("/")[0]
+    if "@" in uri_netloc:
+        # ok, we have a uri with username:password@
+        username = uri_netloc.split(":")[0]
+        password = uri_netloc.split(":")[1][0:-1] #substract the @
+        host = uri_netloc.split("@")[1]
+    else:
+        username = None
+        password = None
+        host = uri_netloc
+    return dict(host=host, username=username, password=password)
