@@ -95,7 +95,8 @@ class RootController(BaseController):
         
         sortAssoc = {"filename": s.file.name,
                      "filesize": s.file.size,
-                     "date": s.file.date,}
+                     "date": s.file.date,
+                     "host": s.file.host,}
         
         if sortby:
             if sortorder == "asc":

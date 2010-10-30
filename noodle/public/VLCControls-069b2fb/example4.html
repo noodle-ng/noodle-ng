@@ -1,0 +1,27 @@
+
+
+
+<title>revolunet VLC javascript library demo</title>
+<body>
+
+    <script type="text/javascript" src="VLCobject.js"></script>
+    <script type="text/javascript" src="VLCcontrols.js"></script>
+            
+    <div id="vlccontent">
+      This text is replaced by the VLC player.
+    </div>
+    
+    Hallo Welt
+
+    <script type="text/javascript">
+        var vlc_controls = null;
+        function init() {
+            // load basic VLCobject
+            var vlcobject = new VLCObject("mymovie", "400", "200", "0.8.6");
+            vlcobject.write("vlccontent");
+            // add controls
+            vlc_controls = new VLCcontrols(vlcobject, true);
+            }
+        window.onload = init();
+    </script>
+</body>

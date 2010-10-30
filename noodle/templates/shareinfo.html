@@ -4,28 +4,20 @@
       xmlns:py="http://genshi.edgewall.org/"
       xmlns:xi="http://www.w3.org/2001/XInclude">
 
-  <xi:include href="master.html" />
 
 <head>
-  <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-  <title>Noodle NG</title>
-  <script type="text/javascript" src="/js/MochiKit/MochiKit.js"></script>
-  <script type="text/javascript" src="/js/pingHost.js"></script>
+	<meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+	<title>Noodle NG</title>
+	<link rel="icon" href="${tg.url('/favicon.png')}" type="image/png" />
+	 
 </head>
 
 <body>
-<h1>Share: ${share.name}</h1>
-<p>
-	Typ: ${share.type}
-</p> 
-<p>
-	erstellt am: ${share.date}
-</p>
-<p>
-	Pfad: ${share.getPath()}
-</p>
-<p>
-	Groesse: 
-</p>
+	<iframe src="${tg.url( '/VLCControls-069b2fb/player.html?shareID=' + str(share.id) )}" width="99%" height="410" name="Player">
+		<p>
+			Ihr Browser kann leider keine eingebetteten Frames anzeigen: Sie k&ouml;nnen die eingebettete Seite &uuml;ber den folgenden Verweis aufrufen: <a href="${tg.url( '/VLCControls-069b2fb/player.html?shareID=' + str(share.id) )}">Player</a>
+		</p>
+	</iframe>
 </body>
+
 </html>

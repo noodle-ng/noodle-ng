@@ -10,9 +10,10 @@
   <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
   <title>Noodle NG</title>
   <link rel="stylesheet" type="text/css" href="${tg.url('/css/filelist.css')}" />
+  <link rel="stylesheet" type="text/css" href="${tg.url('/css/overlay.css')}" />
   <script type="text/javascript" src="${tg.url('/js/MochiKit/MochiKit.js')}"></script>
   <script type="text/javascript" src="${tg.url('/js/pingHost.js')}"></script>
-  <script type="text/javascript" src="${tg.url('/js/jquery.js')}"></script>
+  <script type="text/javascript" src="${tg.url('/js/jquery.tools.min.js')}"></script>
 </head>
 
 <body>
@@ -39,7 +40,7 @@
 			<span py:def="sortselection(sortby, sortorder)">
 				<span py:choose="">
 					<span py:when="sortorder == None">
-						<a href="${tg.url('/search_by_file?query=' + query + '&amp;offset=' + str(offset) + '&amp;sortby=' + str(sortby) + '&amp;sortorder=asc')}">
+						<a href="${tg.url('/search_by_file?query=' + query + '&amp;offset=' + str(offset) + '&amp;sortby=' + str(sortby) + '&amp;sortorder=desc')}">
 							<img src="${tg.url('/images/sort_sw.jpg')}" alt="sort" width="28" height="30" />
 						</a>
 					</span>
@@ -65,7 +66,7 @@
 				</span>
 				Name
 			</th>
-			<th scope="col" style="width:80px; text-align:center;">
+			<th scope="col" style="width:100px; text-align:center;">
 				<span py:choose="">
 					<span py:when="sortby == 'filesize'">${sortselection('filesize', sortorder)}</span>
 					<py:otherwise>${sortselection('filesize', None)}</py:otherwise>
@@ -92,7 +93,7 @@
 		<tr py:for="file in files">
 			<td id="file_online"><img name="ping_Host" value="${file.host.ip}" src="${tg.url('/images/ping_grey.png')}" /></td>
 			<td id="file_icon">
-				<a href="external-content.htm" rel="#overlay" style="text-decoration:none">
+				<a href="${tg.url( '/shareInfo?shareID=' + str(file.id) )}" rel="#overlay" style="text-decoration:none">
 					<img name="media type" src="${tg.url('/images/file_icons/' + file.mediaType + '_25x25.jpg')}" />
 				</a>
 			</td>
@@ -122,7 +123,11 @@ $(function() {
 	// it is assumed to be the onBeforeLoad event listener
 	$("a[rel]").overlay({
 
-		mask: 'darkred',
+		mask: {
+		color: '#000000',
+		loadSpeed: 200,
+		opacity: 0.9
+			},
 		effect: 'apple',
 
 		onBeforeLoad: function() {
