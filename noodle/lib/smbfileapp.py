@@ -1,7 +1,7 @@
 # Source: http://pythonpaste.org/webob/file-example.html
 from webob import Request, Response
 from webob.byterange import Range
-from webob.exc import HTTPOk, HTTPGatewayTimeout
+from webob.exc import HTTPOk, HTTPNotFound, HTTPGatewayTimeout
 import os
 import logging
 from noodle.lib.utils import pingSMB
@@ -81,7 +81,11 @@ def make_response(uri, environ):
     if not pingSMB( parseSMBuri(uri)["host"] ):
         return HTTPGatewayTimeout("Host is currently offline. You may try again at a later time.")
     
-    f = c.open(uri)
+    try:
+        f = c.open(uri)
+    except smbc.NoEntryError:
+        return HTTPNotFound("The file you requested is no longer available!")
+    
     fs = f.fstat()
     filesize = fs[6]
     last_modified = fs[8] # mtime
