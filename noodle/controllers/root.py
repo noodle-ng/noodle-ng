@@ -219,7 +219,7 @@ class RootController(BaseController):
         return dict(page='ping', time=result, host=ip)
     
     @expose()
-    def proxyDownload(self, id=1617, tar=False):
+    def proxyDownload(self, id=None, tar=False):
         
         if proxyDl==True:
             
