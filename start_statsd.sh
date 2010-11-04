@@ -3,7 +3,7 @@
 # this script starts the statistics daemon and takes care, that not multiple instances are spawned at once
 #
 statsd="statsd.py"
-LCK_FILE="/tmp/noodle_crawler.lck"
+LCK_FILE="/tmp/noodle_statsd.lck"
 
 cwd=`pwd`
 python=`which python`
