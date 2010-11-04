@@ -11,15 +11,14 @@ import noodle.model as model
 from noodle.lib.utils import pingSMB
 
 # getting database url from production.ini
-try:
-    import ConfigParser
-    config = ConfigParser.SafeConfigParser()
-    #config.read('development.ini')
-    config.read('production.ini')
-    url = config.get('app:main','sqlalchemy.url',raw=True)
-    if not url: raise
-except:
-    url = 'sqlite:///%(here)s/somedb.db'
+
+import ConfigParser
+config = ConfigParser.SafeConfigParser()
+#config.read('development.ini')
+config.read('production.ini')
+url = config.get('app:main','sqlalchemy.url',raw=True)
+if not url: raise
+
 
 import os
 import smbc
