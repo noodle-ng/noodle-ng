@@ -290,6 +290,15 @@ def search(query=None):
                 date = datetime.strptime(value, "%d.%m.%Y")
                 q = q.filter(s.share.date >= date)
                 continue
+            if operator == "found_before":
+                date = datetime.strptime(value, "%d.%m.%Y")
+                q = q.filter(s.share.first_seen <= date)
+                continue
+            if operator == "found_after":
+                date = datetime.strptime(value, "%d.%m.%Y")
+                q = q.filter(s.share.first_seen >= date)
+                continue
+            
             if operator == "host":
                 onlyHosts.append(value)
                 continue
