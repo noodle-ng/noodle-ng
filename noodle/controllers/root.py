@@ -327,7 +327,7 @@ def search(query=None):
 def processKW(kw):
     """ process the Keyword List and return a new kw and a query string """
     query = ""
-    magic_words = ["greater", "smaller", "host", "type", "before", "after", "ext"]
+    magic_words = ["greater", "smaller", "host", "type", "before", "after", "found_before", "found_after", "ext"]
 
     for mw in magic_words:
         if mw in kw:
