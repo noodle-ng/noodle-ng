@@ -32,14 +32,16 @@ class Generic(TableForm):
     class fields(WidgetsList):
         query   = TextField(label_text='Suche')
         Spacer()
-        greater = TextField(label_text=u'groesser als', size=5, help_text='in MiB', default=0)
-        smaller = TextField(label_text='kleiner als', size=5, help_text='in MiB', default=0)
-        before  = CalendarDatePicker(label_text='aelter als', date_format="%d.%m.%Y", default="")
-        after   = CalendarDatePicker(label_text='neuer als', date_format="%d.%m.%Y", default="")
-        host    = TextField(label_text='Host')
-        hostel  = Hostel(label_text='Wohnheim', disabled=True)
-        ext     = TextField(label_text='Endung', size=4)
-        type 	= Type(label_text='Typ')
+        greater = TextField(label_text=u'größer als', size=5, help_text='in MiB', default=0)
+        smaller = TextField(label_text=u'kleiner als', size=5, help_text='in MiB', default=0)
+        before  = CalendarDatePicker(label_text=u'älter als', date_format="%d.%m.%Y", default="")
+        after   = CalendarDatePicker(label_text=u'neuer als', date_format="%d.%m.%Y", default="")
+        found_before  = CalendarDatePicker(label_text=u'gefunden vor dem', date_format="%d.%m.%Y", default="", width=500)
+        found_after   = CalendarDatePicker(label_text=u'gefunden nach dem', date_format="%d.%m.%Y", default="")
+        host    = TextField(label_text=u'Host')
+        hostel  = Hostel(label_text=u'Wohnheim', disabled=True)
+        ext     = TextField(label_text=u'Endung', size=4)
+        type 	= Type(label_text=u'Typ')
     
     submit_text = 'noodle'
 
