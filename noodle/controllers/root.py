@@ -17,6 +17,8 @@ import noodle.model.share as s
 from noodle.model.share import audioExt, videoExt, mediaExt
 from noodle.model.share import ipToInt, intToIp
 
+from noodle.model.pinboard import post
+
 from sqlalchemy.sql.expression import distinct
 from sqlalchemy import or_, and_
 
@@ -241,6 +243,24 @@ class RootController(BaseController):
             return use_wsgi_app(f)
         else: #proxyDl not enabled
             return "<p><strong>proxyDownloader is (currently) not available on this system!</strong><br /><em>Sorry.</em></p>\n"
+    
+    @expose('noodle.templates.pinboard')
+    def pinboard(self, author=None, text=None, offset=0, length=20):
+        offset = int(offset)
+        length = int(length)
+        
+        if author and text:
+            # create new post
+            newpost = post()
+            newpost.author = author
+            newpost.text = text
+            newpost.date = datetime.now()
+            DBSession.add(newpost)
+            DBSession.commit()
+        
+        posts = DBSession.query(post).order_by(post.date.desc())[offset:offset+length]
+        return dict(page="PinBoard", offset=offset, length=length, posts=posts)
+        
 
 def search(query=None):
     """ process the query string and return a compiled query """
