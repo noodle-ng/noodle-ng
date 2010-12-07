@@ -111,7 +111,8 @@ class RootController(BaseController):
             files = q[offset:length+offset]
         
         # calculate the number of pages
-        numberOfFiles = len( q.from_self(s.file.id).all() )
+        numberOfFiles = q.count()
+        
         pages = []
         i = 0
         n = 1
@@ -150,7 +151,7 @@ class RootController(BaseController):
 
         q = search(query)
 
-        numberOfHosts = len( q.from_self(s.share.host_id).distinct().all() )
+        numberOfHosts = q.from_self(s.share.host_id).distinct().count()
         pages = []
         i = 0
         n = 1
