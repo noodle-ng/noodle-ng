@@ -111,7 +111,7 @@ class RootController(BaseController):
             files = q[offset:length+offset]
         
         # calculate the number of pages
-        numberOfFiles = len( q.from_self(s.file.id).all() )
+        numberOfFiles = q.count()
         pages = []
         i = 0
         n = 1
