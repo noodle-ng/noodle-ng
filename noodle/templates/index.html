@@ -1,21 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:py="http://genshi.edgewall.org/"
       xmlns:xi="http://www.w3.org/2001/XInclude">
 
-  <xi:include href="master.html" />
+<xi:include href="master.html" />
 
 <head>
-  <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
-  <title>Noodle NG</title>
-  <link rel="stylesheet" type="text/css" href="${tg.url('/css/index.css')}" />
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8" py:replace="''" />
+  	<title>Noodle NG</title>
+  	<link rel="stylesheet" type="text/css" href="${tg.url('/css/index.css')}" />
 </head>
 
 <body onLoad="javascript:document.search.query.focus()">
 
 <div style="text-align: center;">
-    <form id="searchform" method="get" action="/search_by_host" name="search">
+    <form id="searchform" method="get" action="${tg.url('/search_by_host')}" name="search">
         <input id="searchfield" maxlength="2048" size="40" name="query" />
         <br />
         <input type="submit" value="noodle" />
@@ -26,9 +27,8 @@
     Gesamt Share: ${overallShare}
 </div>
 
-<div py:if="changelog"><xi:include href="changelog.html" /></div>
+<div><xi:include href="${tg.url('welcome.html')}" /></div>
 
 <!-- <div py:replace="time">Page text goes here.</div> -->
 </body>
 </html>
-

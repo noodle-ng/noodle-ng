@@ -53,7 +53,7 @@ class RootController(BaseController):
 
     @expose('noodle.templates.index')
     def index(self):
-        """Handle the front-page."""
+        """Handles the front-page."""
 
         #Calculates the overall share amount
         overallShare = 0
@@ -64,8 +64,8 @@ class RootController(BaseController):
         except:
             pass
 
-        #Renders the page index with overall share amount and changelog
-        return dict(page='index', overallShare=s.makePretty(overallShare), changelog=True)
+        #Renders the page index with overall share amount
+        return dict(page='index', overallShare=s.makePretty(overallShare))
 
     @expose('noodle.templates.advanced_search')
     def advanced_search(self):
