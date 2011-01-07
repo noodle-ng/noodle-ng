@@ -80,6 +80,7 @@ ul#mainmenu li a:hover, ul#mainmenu li a.active {
 
 ul#mainmenu li.first a {
 	background: none;
+	font-weight: bold;
 }
 
 ul#mainmenu li.first a:hover, ul#mainmenu li.first a.active {
