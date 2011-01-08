@@ -37,7 +37,8 @@
 	<li>Dateizugriff</li>
 	<ul>
 		<li><a href="#login">Benutzernamen / Passwort</a></li>
-		<li><a href="#firefox-smb">Firefox und smb-Protokoll</a></li>
+		<li><a href="#open-files">Dateien laden</a></li>
+		<li><a href="#open-folders">Ordner öffnen</a></li>
 	</ul>
 </ul>
 </div>
@@ -51,9 +52,10 @@ Momentan ist es aber noch ein Platzhalter.</p>-->
 <h2>Allgemeines</h2>
 
 <a name="update"></a><h3>Wie häufig wird Noodle aktualisiert?</h3>
-<p>Das Netzwerk der Wohnheime wird alle 3 Stunden gescannt. <br />
+<p>Das Netzwerk der Wohnheime wird ca. jede Stunde gescannt, 
+das genaue Intervall hängt davon ab, wie lange es jeweils dauert! <br />
 Ein sog. "Crawler" sammelt dabei Informationen über alle Netzwerkfreigaben
-und pflegt daraus eine Datenbank, in der dann gesucht werden kann.</p>
+und pflegt daraus eine Datenbank, in der dann gesucht wird.</p>
 
 
 <h2>Suche</h2>
@@ -138,8 +140,18 @@ enthalten finden:</p><p>"Simpsons ext:avi greater:200"</p>
 	</tr>
 </table>
 
-<a name="firefox-smb"></a><h3>Firefox bringt unter Windows die Meldung, dass er nicht weiss, wie die Adresse geöffnet werden soll, weil das smb-Protokoll unbekannt ist.</h3>
-<h3>Workaround:</h3>
+<a name="open-files"></a><h3>Dateien laden</h3>
+<p>Dank das <strong>proxyDownloaders</strong> kannst du um eine Datei zu laden jetzt einfach 
+den entsprechenden Link anklicken und dein Browser wird die Datei laden.<br />
+Falls du allerdings lieber den Ordner, in dem die Datei vorkommt in deinem
+Dateiexplorer öffnen willst, mussst du auf den entsprechenden 
+<a href="#open-folder">Ordner-Link</a> klicken.</p>
+
+<a name="open-folders"></a><h3>Ordner öffnen</h3>
+<h4>Beim klicken auf einen Ordner-Link in der hostbasierten Suche kann es
+vorkommen, dass der Browser sich beschwert, dass er nicht weiss, 
+wie die Adresse geöffnet werden soll, weil das smb-Protokoll unbekannt ist. </h4>
+<h4>Workaround:</h4>
 <ol>
 	<li>Mit der rechten Maustaste auf den Link klicken und "Linkadresse kopieren" wählen.</li>
 	<li>Den Windows Explorer öffnen und in der Adressleiste den Inhalt der Zwischenablage einfügen.</li>
