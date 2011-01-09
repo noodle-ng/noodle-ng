@@ -1,0 +1,21 @@
+
+filesystem.py 
+==================
+contains an "interface" that filesystem implementations shall provide to be useful for noodle
+
+fs_os.py
+==================
+"implements" filesystem.py for filesystem operations on the host operating system (which of course is not very useful, but ideal for testing)
+
+test.py
+==================
+tests the native implementation and the artificial implementation of os filesystem operations
+To verify that all implementations are identical, compare the parts between the ###..# separators.
+$ diff test-native.txt test-artificial.txt
+
+fs_smb.py
+==================
+first attempt to implement filesystem operations via pysmbc
+At the moment, the algorithm doesn't go deeper than one level.
+It should recall itself with a deeper directory path, but propably because
+of the yield function this doesn't work.
