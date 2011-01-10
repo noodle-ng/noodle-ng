@@ -1,4 +1,5 @@
-
+# THIS TESTFILE IS DEPRECATED
+# PLEASE USE filesystem_test.py FOR MORE SOPHISTICATED TESTS
 import os
 
 path = "/home/moschlar/Downloads"

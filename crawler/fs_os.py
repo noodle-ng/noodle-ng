@@ -56,5 +56,3 @@ def fopen(path):
     Returns file handle specified by path
     """
     return open(path)
-
-

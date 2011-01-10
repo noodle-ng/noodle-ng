@@ -1,17 +1,19 @@
+filesystem-test.py
+==================
+Contains test cases for filesystem implementations to verify if their output 
+is the same as from os functions,
+Implementations must be added to this file and must be configured correctly
+(e.g. mount a smb share and specify local mount point for verification)
 
 filesystem.py 
 ==================
-contains an "interface" that filesystem implementations shall provide to be useful for noodle
+contains an "interface" that filesystem implementations shall provide 
+to be useful for noodle
 
 fs_os.py
 ==================
-"implements" filesystem.py for filesystem operations on the host operating system (which of course is not very useful, but ideal for testing)
-
-test.py
-==================
-tests the native implementation and the artificial implementation of os filesystem operations
-To verify that all implementations are identical, compare the parts between the ###..# separators.
-$ diff test-native.txt test-artificial.txt
+"implements" filesystem.py for filesystem operations on the 
+host operating system (which of course is not very useful, but ideal for testing)
 
 fs_smb.py
 ==================
