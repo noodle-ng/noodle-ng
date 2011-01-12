@@ -6,7 +6,7 @@ def faculty(k,result=1,counter=1):
     else:
         return faculty(k,result*counter,counter+1)
 
-# does what it should but the wrong way
+# does what it should do
 def facultyGenerator(k,result=1,counter=1):
     
     yield result*counter
@@ -15,7 +15,8 @@ def facultyGenerator(k,result=1,counter=1):
         raise StopIteration
     else:
         # list forces generator to be evaluated
-        yield list(facultyGenerator(k,result*counter,counter+1))
+        for item in facultyGenerator(k,result*counter,counter+1):
+            yield item
         
 
 print faculty(4)
