@@ -1,4 +1,4 @@
-filesystem-test.py
+filesystem_test.py
 ==================
 Contains test cases for filesystem implementations to verify if their output 
 is the same as from os functions,
@@ -17,7 +17,5 @@ host operating system (which of course is not very useful, but ideal for testing
 
 fs_smb.py
 ==================
-first attempt to implement filesystem operations via pysmbc
-At the moment, the algorithm doesn't go deeper than one level.
-It should recall itself with a deeper directory path, but propably because
-of the yield function this doesn't work.
+provides access to a filesystem via smb
+paths should be provided as smb://[username[:password]@]host/share[/path]
