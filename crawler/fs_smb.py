@@ -57,9 +57,8 @@ def walk(top):
         print "dirname: %s" % dirname
         newpath = dirpath+"/"+dirname
         print "newpath: %s" % newpath
-        walk(newpath)
-        # TODO
-        # Why does double yield not work???
+        for dir in walk(newpath):
+            yield dir
 
 def path_walk(path,visitor,data):
     """Simulate os.path.walk
