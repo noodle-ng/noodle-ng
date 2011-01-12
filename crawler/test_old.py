@@ -2,7 +2,7 @@
 # PLEASE USE filesystem_test.py FOR MORE SOPHISTICATED TESTS
 import os
 
-path = "/home/moschlar/Downloads"
+path = "/home/moschlar/Studium"
 
 print "path: %s" % path
 print ""
@@ -51,7 +51,7 @@ print ""
 
 import fs_smb
 
-path = "smb://mopad/Downloads"
+path = "smb://mopad/Studium"
 
 def fstats(dirname,filename):
     stat = fs_smb.stat(dirname+"/"+filename)

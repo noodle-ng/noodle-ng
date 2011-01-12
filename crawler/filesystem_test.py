@@ -21,30 +21,30 @@ VERBOSE = False
 
 # Wiĺl be used as root for the native os implementation
 # and our reference implementation fs_os
-LOCAL_TEST_ROOT = "/home/moschlar/"
+LOCAL_TEST_ROOT = "/home/moschlar/Studium"
 
 # Wiĺl be used as root for the native os implementation
-SMB_MOUNT_ROOT = ""
+SMB_MOUNT_ROOT = "/home/moschlar/Studium"
 # Will be used as root uri for our implementation of fs_smb
-SMB_TEST_URI = ""
+SMB_TEST_URI = "smb://localhost/studium"
 
 import os
-import fs_os as fs
+import fs_smb as fs
 
 def test(reference_path,test_path):
     # Generating reference list
     if DEBUG:
         print "reference test at %s" % reference_path
-    reference_list = [x for x in os.walk(reference_path)]
+    reference_list = [(x.replace(reference_path,'',1),y,z) for (x,z,y) in os.walk(reference_path)]
     if VERBOSE:
-        print "reference list:\n%s" % reference_list
+        print "reference list:\n%s" % str(reference_list)
     
     # Generating test list
     if DEBUG:
         print "test at %s" % test_path
-    test_list = [x for x in fs.walk(test_path)]
+    test_list = [(x.replace(test_path,'',1),y,z) for (x,z,y) in fs.walk(test_path)]
     if VERBOSE:
-        print "test list:\n%s" % test_list
+        print "test list:\n%s" % str(test_list)
     
     # Fastest test
     if not len(reference_list) == len(test_list):
@@ -52,37 +52,34 @@ def test(reference_path,test_path):
             print "lists not of same length"
         return False
 
-    # This test could be also fast but since we do not rely on
-    # the exact order of elements we should not use it too much
-    if not str(reference_list) == str(test_list):
-        if DEBUG:
-            print "lists not of same string representation"
-        return False
-
     # These are the most proper tests but the take some time
     # Of course, we want to make sure we have equality between the 
     # two lists so we have to check inclusions in both directions
-    for i in range(0,len(reference_list)):
-        if not reference_list[i] in test_list:
+    for entry in reference_list:
+        if not entry in test_list:
             if DEBUG:
-                print "%s not in test_list" % reference_list[i]
+                print "%s not in test_list" % str(entry)
             return False
+        if VERBOSE:
+            print "found %s in test_list" % str(entry)
         
-    for i in range(0,len(test_list)):
-        if not test_list[i] in reference_list:
+    for entry in test_list:
+        if not entry in reference_list:
             if DEBUG:
-                print "%s not in reference_list" % test_list[i]
+                print "%s not in reference_list" % str(entry)
             return False
+        if VERBOSE:
+            print "found %s in reference_list" % str(entry)
 
     # If we haven't already cancelled before, we're ok here
     return True
 
 def main():
     if DEBUG:
-        print "Now testing fs_os"
+        print "Now testing fs_smb"
     #import fs_os as fs
             
-    result = test(LOCAL_TEST_ROOT,LOCAL_TEST_ROOT)
+    result = test(SMB_MOUNT_ROOT,SMB_TEST_URI)
     print result
     return result
 

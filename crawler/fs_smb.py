@@ -36,27 +36,27 @@ def walk(top):
     direntries = dir.getdents()
     for entry in direntries:
         if entry.name == "." or entry.name =="..":
-            print "skip"
+            #print "skip"
             # Skipping . and ..
             continue
         elif entry.smbc_type == smbc_type['folder']:
-            print "folder %s" % entry.name
+            #print "folder %s" % entry.name
             # Folder
             dirnames.append(entry.name)
         elif entry.smbc_type == smbc_type['file']:
-            print "file %s" % entry.name
+            #print "file %s" % entry.name
             #File
             filenames.append(entry.name)
         else:
             continue
     
-    print (dirpath, dirnames, filenames)
+    #print (dirpath, dirnames, filenames)
     yield (dirpath, dirnames, filenames)
     
     for dirname in dirnames:
-        print "dirname: %s" % dirname
+        #print "dirname: %s" % dirname
         newpath = dirpath+"/"+dirname
-        print "newpath: %s" % newpath
+        #print "newpath: %s" % newpath
         for dir in walk(newpath):
             yield dir
 
@@ -82,13 +82,19 @@ def stat(path):
     all others may be set 0 if not retrievable)
         
     """
+#    print c.open("smb://localhost/downloads/BspKlausurAufg.pdf").fstat()
+#    (33188, 468894, 0, 4032, 0, 1, 1000, 1000, 60006, 0)
+#    vs.
+#    os.stat("/home/moschlar/Downloads/BspKlausurAufg.pdf")
+#    posix.stat_result(st_mode=33188, st_ino=393329L, st_dev=2054L, st_nlink=1, st_uid=1000, st_gid=1000, st_size=60006L, st_atime=1294817044, st_mtime=1294817013, st_ctime=1294817013)
+
     try:
         fstat = c.open(path).fstat()
-        print fstat
+        #print fstat
     except:
         fstat = (0,0,0,0,0,0,0,0,0,0)
     
-    return fstat
+    return (0,0,0,0,fstat[6],fstat[7],fstat[8],0,0,0)
 
 def open(path):
     """Open file.
