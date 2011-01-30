@@ -4,3 +4,5 @@ Babel >=0.9.4
 toscawidgets >= 0.9.7.1
 zope.sqlalchemy >= 0.4
 repoze.tm2 >= 1.0a4
+webob >= 0.9.8
+pysmbc >= 1.0.9
