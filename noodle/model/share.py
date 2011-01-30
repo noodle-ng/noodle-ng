@@ -9,27 +9,27 @@ from sqlalchemy.types import Integer, Unicode, DateTime, Float, Binary, Numeric
 
 from noodle.model import DeclarativeBase, metadata, DBSession
 
-videoExt = ["avi", "mkv", "mp4", "mpv", "mov", "mpg", "divx", "vdr"]
-audioExt = ["mp3", "aac", "ogg", "m4a", "wav"]
+videoExt = [u"avi", u"mkv", u"mp4", u"mpv", u"mov", u"mpg", u"divx", u"vdr"]
+audioExt = [u"mp3", u"aac", u"ogg", u"m4a", u"wav"]
 
 mediaExt = videoExt[:]
 mediaExt.extend(audioExt)
 
 def makePretty(value):
     ''' convert bit values in human readable form '''
-    steps = [ (1024,"KiB"), (1048576, "MiB"), (1073741824, "GiB"), (1099511627776, "TiB") ]
+    steps = [ (1024, u"KiB"), (1048576, u"MiB"), (1073741824, u"GiB"), (1099511627776, u"TiB") ]
     for step in steps:
         m = step[0]
         suffix = step[1]
         try:
             cs = value / m
         except:
-            return ""
+            return u""
         if cs < 10:
-            return "%3.1f" % (cs) + ' ' + suffix
+            return u"%3.1f" % (cs) + ' ' + suffix
         if cs < 1024:
             return unicode( int(cs) ) + ' ' + suffix
-    return "very big"
+    return u"very big"
 
 class meta(DeclarativeBase):
     __tablename__ = 'meta'
