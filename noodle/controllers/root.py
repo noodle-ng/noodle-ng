@@ -70,7 +70,7 @@ class RootController(BaseController):
     @expose('noodle.templates.advanced_search')
     def advanced_search(self):
         """Displays the advanced search page"""
-        tmpl_context.generic_search = search_form.Generic("Generic", action='search_by_host')
+        tmpl_context.generic_search = search_form.Generic("Generic", action='search')
         return dict(page='advanced_search')
 
     @expose('noodle.templates.faq')
@@ -82,6 +82,30 @@ class RootController(BaseController):
     def contact(self):
         """Displays contact page"""
         return dict(page='contact')
+    
+    @expose()
+    def search(self,query,**args):
+        '''
+        Handles search requests and tries to dispatch them to the correct mode
+        If mode is not specified or invalid, it falls back to search_by_host
+        '''
+        if args.has_key('submit'):
+            mode = args['submit']
+        elif args.has_key('mode'):
+            mode = args['mode']
+        else:
+            mode = None
+
+        if mode == "noodle by file":
+            path = "/search_by_file?query=%s" % query
+        else:
+            path="/search_by_host?query=%s" % query
+        
+        for (key,value) in args.items():
+            if (value != "") and (value != "0") and (key != "mode") and (key !="submit"):
+                path += " %s:%s" % (key,value)
+        
+        redirect(path)
     
     @expose('noodle.templates.search_by_file')
     def search_by_file(self, query=None, offset=0, length=100, sortby="filename", sortorder="asc", **kw):

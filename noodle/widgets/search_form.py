@@ -2,7 +2,7 @@
 """Search Form"""
 
 from tw.api import WidgetsList
-from tw.forms import TableForm, CalendarDatePicker, SingleSelectField, RadioButtonList, TextField, TextArea, Spacer
+from tw.forms import TableForm, CalendarDatePicker, SingleSelectField, RadioButtonList, TextField, TextArea, Spacer, SubmitButton
 #from tw.forms.validators import Int, NotEmpty, DateConverter
 
 class Type(SingleSelectField):
@@ -26,6 +26,9 @@ class Hostel(SingleSelectField):
 		"Wallstrasse",
         ]
 
+class SearchMode(RadioButtonList):
+    options = ["noodle by file", "noodle by host"]
+
 class Generic(TableForm):
     """ generic file search form """
 
@@ -42,8 +45,9 @@ class Generic(TableForm):
         hostel  = Hostel(label_text=u'Wohnheim', disabled=True)
         ext     = TextField(label_text=u'Endung', size=4)
         type 	= Type(label_text=u'Typ')
+        mode    = SearchMode(label_text=u'Suchmodus', default=0)
     
     submit_text = 'noodle'
 
 
-generic = Generic("Generic", action='search_by_host')
+generic = Generic("Generic", action='search')
