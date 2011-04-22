@@ -22,7 +22,7 @@ if not url: raise
 
 import os
 import smbc
-credentials = [ ["Gast", "123Dabei"], ["anonymous", ""] ]
+credentials = [ ("Gast", "123Dabei"), ("anonymous", "") ]
 
 # smbc_type
 # 3 = Share
@@ -124,7 +124,7 @@ def crawl(ip=False):
         myService.password = unicode(password)
         #myService = ''
         
-        def walker(dir,path):
+        def walker(c,dir,path):
             # dir must be smbc.Dir
             """ This function walks recursively through the directory you give him
             and returns folder()-Objects according to the model.
@@ -160,7 +160,7 @@ def crawl(ip=False):
                     except:
                         #logging.debug('Opening %s went wrong' % newPath)
                         continue
-                    myFolder = walker(newDir,newPath)
+                    myFolder = walker(c,newDir,newPath)
                     theFolder.children.append(myFolder)
                     #theFolder += entry.name+'\n'+myFolder+'\n'
                     
@@ -208,11 +208,15 @@ def crawl(ip=False):
                     continue
                 # Now we have to loop through all the content of share
                 # So we start the walker
-                theFolder = walker(dir,path)
+                theFolder = walker(c,dir,path)
                 #logging.debug(theFolder)
                 theFolder.name = unicode(share.name)
                 myService.children.append(theFolder)
                 #myService += theFolder
+        
+        # Trying to completely kill the smbContext
+        c = None
+        del c
         
         #logging.info(myService)
         return myService
@@ -380,10 +384,11 @@ if __name__ == '__main__':
     pool = Pool(processes=10, initializer=setupProcess)
     logging.info("beginn crawling")
     #hostlist = ["134.93.51.1","134.93.51.36","134.93.68.68"]
-    hostlist = ["134.93.51.1",]
+    hostlist = ["134.93.50.65", "134.93.51.1"]
     for host in hostlist:
         #pool.apply_async(commitJob, [host], callback=report)
         debug(host)
+        #time.sleep(60)
     pool.close()
     pool.join()
     
