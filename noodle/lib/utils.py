@@ -28,21 +28,18 @@ def getDnsEntry(ip):
     return entry
 
 def splitFileName(s):
-    """ splits Kobe.avi to 'Kobe' and 'avi' """
+    """ Splits filename to (name, ext) 
     
-    name=''
-    ext=''
+    splits Kobe.avi to ('Kobe', 'avi') 
+    splits .htaccess to ('', 'htaccess')
+    splits file to ('file', '')
+    """
     
-    #reverse fileName s
-    s=s[::-1]
-    #if no dot in fileName s
-    position=s.find('.')
+    ret = s.rsplit('.', 1)
+    name = ret[0]
+    ext = ''
     
-    #if no dot in fileName s
-    if position == -1 :
-        name=s[::-1]
-    #else split by dot
-    else:
-        ext=s[:position][::-1]
-        name=s[position+1:][::-1]
-    return [name,ext]
+    if len(ret) == 2:
+        ext = ret[1]
+    
+    return (name, ext)
