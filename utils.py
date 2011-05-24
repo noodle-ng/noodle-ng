@@ -51,12 +51,29 @@ def intToIp(IntIP):
         IP += str(i) + "."
     return IP[:-1]
 
+def intToIp2(ip):
+    """ 
+    converts an integer to an IPv4 address (inverse function of ipToInt 
+    e.g. 4294967295 => 255.255.255.255
+    """
+    
+    result=[]
+    for count in range(4):
+        result.insert(0,str(ip%256))
+        ip/=256
+
+    return ".".join(result)
+
 #--- file related methods --------------------------
 
 def makePretty(value):
     """ converts file sizes from bit values to a human readable form """
     
-    steps = [ (1024, "KiB"), (1048576, "MiB"), (1073741824, "GiB"), (1099511627776, "TiB") ]
+    steps = [ (1024, "KiB"), 
+              (1048576, "MiB"),
+              (1073741824, "GiB"),
+              (1099511627776, "TiB") ]
+    
     for step in steps:
         m = step[0]
         suffix = step[1]
@@ -69,3 +86,7 @@ def makePretty(value):
         if cs < 1024:
             return unicode( int(cs) ) + ' ' + suffix
     return "too much"
+
+if __name__ == "__main__":
+    print intToIp(1323000)
+    print intToIp2(1323000)
