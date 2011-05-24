@@ -33,13 +33,29 @@ def ipToInt(IP):
     
     e.g. 255.255.255.255 => 4294967295 """
     
+    #########################################
+    # i think this is wrong
+    #########################################
+    
     IntIP = 0
     count = 3
     for i in IP.split("."):
         if i != '0':
-            IntIP += ( int(i)*256 )**count
+            IntIP += ( int(i)*256 )**count # why i**count ??????
         count -= 1           
     return IntIP
+
+def ipToInt2(IP):
+    """ 
+    converts an IPv4 address to an integer 
+    e.g. 255.255.255.255 => 4294967295 
+    """
+    # get coefficients a_i in basis b=256 and their exponent i
+    coords=enumerate(reversed(IP.split(".")))
+    
+    # sum them up via x=sum_i a_i b^i
+    return sum([int(coord)*256**count for count,coord in coords])
+    
 
 def intToIp(IntIP):
     """ converts an integer to an IPv4 address (inverse function of ipToInt 
@@ -53,10 +69,11 @@ def intToIp(IntIP):
 
 def intToIp2(ip):
     """ 
-    converts an integer to an IPv4 address (inverse function of ipToInt 
+    converts an integer to an IPv4 address (inverse function of ipToInt) 
     e.g. 4294967295 => 255.255.255.255
     """
     
+    # decompose a natural number in basis 256
     result=[]
     for count in range(4):
         result.insert(0,str(ip%256))
@@ -90,3 +107,5 @@ def makePretty(value):
 if __name__ == "__main__":
     print intToIp(1323000)
     print intToIp2(1323000)
+    print intToIp (ipToInt ("1.2.3.4")) # this is wrong
+    print intToIp2(ipToInt2("1.2.3.4"))
