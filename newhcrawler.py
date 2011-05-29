@@ -4,25 +4,60 @@
 from multiprocessing import Pool
 import time
 import logging
+import sys, os
 from datetime import datetime, timedelta
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker, scoped_session
 import noodle.model as model
 from noodle.lib.utils import pingSMB
-
-# getting database url from production.ini
+import noodle.lib.iptools as iptools
+import smbc
 
 import ConfigParser
-config = ConfigParser.SafeConfigParser()
-#config.read('development.ini')
-config.read('production.ini')
-url = config.get('app:main','sqlalchemy.url',raw=True)
-if not url: raise
+config = ConfigParser.SafeConfigParser({'here': sys.path[0]})
+try:
+    config.read(os.path.join(sys.path[0], 'crawler.ini'))
+except:
+    sys.exit("could not read crawler.ini")
+    
+sqlalchemy_url = config.get('main', 'sqlalchemy.url')
+sqlalchemy_echo = config.getboolean('main', 'sqlalchemy.echo')
+debug_mode = config.getboolean('main', 'debug')
 
+if config.has_option("main", "credentials"):
+    main_credentials = eval( config.get("main", 'credentials') )
+    if not isinstance(main_credentials, tuple):
+        main_credentials = (main_credentials,)
+else:
+    main_credentials = ()
 
-import os
-import smbc
-credentials = [ ("Gast", "123Dabei"), ("anonymous", "") ]
+sections = []
+for sectionName in config.sections():
+    if sectionName != "main":   # main is not allowed to have a range
+        sections.append({})
+        section = sections[-1]
+        section["name"] = sectionName
+        section["range"] = []
+        try:
+            range = config.get(sectionName, 'range')
+        except:
+            print "WARNING: no range found for " + sectionName
+            continue
+        for singlerange in range.split(","):
+            singlerange = singlerange.strip()
+            section["range"].append( iptools.IpRangeList(singlerange) )
+        if config.has_option(sectionName, "credentials"):
+            section_credentials = eval( config.get(sectionName, 'credentials') )
+            if not isinstance(section_credentials, tuple):
+                section_credentials = (section_credentials,)
+        else:
+            section_credentials = ()
+        section["credentials"] = []
+        for item in main_credentials:
+            section["credentials"].append(item)
+        for item in section_credentials:
+            section["credentials"].append(item)
+            
 
 # smbc_type
 # 3 = Share
@@ -32,7 +67,7 @@ SMBC_SHARE =  3
 SMBC_FOLDER = 7
 SMBC_FILE =   8
 
-def crawl(ip=False):
+def crawl(ip=False, credentials=[["anonymous", ""]]):
     
     def getDate(dateString):
         """ converts the string given by smbclient to a datetime object """
@@ -83,13 +118,14 @@ def crawl(ip=False):
         return qfolder
     
     
-    def analyze(ip):
+    def analyze(ip, credentials):
         """ Analyze the given host and return filesystem representation """
         
         # In the future, def analyze(ip,credentials) where credentials is [username,password] 
         # that are retrieved from a database could be used
         
         logging.info("analyzing "+ str(ip) +" with pysmbc")
+        logging.info("creds: " + str(credentials))
         
         shares = []
         for (username,password) in credentials:
@@ -303,7 +339,7 @@ def crawl(ip=False):
         session.add(myhost)
         
         logging.debug(str(ip) + " analyzing Host")
-        remoteService = analyze(ip)
+        remoteService = analyze(ip, credentials)
         if not remoteService:
             # got no valid data
             return
@@ -330,9 +366,9 @@ def crawl(ip=False):
     return
 
 
-def commitJob(ip):
+def commitJob(ip, credentials):
     startTime = time.time()
-    crawl(ip)
+    crawl(ip, credentials)
     endTime = time.time()
     return "crawled host " + ip + " in " + str(endTime - startTime) + " seconds"
 
@@ -345,8 +381,7 @@ def setupProcess():
     from sqlalchemy.orm import sessionmaker, scoped_session
     import noodle.model as model
     
-    verbose = False
-    engine = sqlalchemy.create_engine(url, echo=verbose)
+    engine = sqlalchemy.create_engine(sqlalchemy_url, echo=sqlalchemy_echo)
     model.maker = sessionmaker(autoflush=False, autocommit=False, extension=model.MySessionExtension())
     model.DBSession = scoped_session(model.maker)
     model.init_model(engine)
@@ -354,46 +389,51 @@ def setupProcess():
 
 
 
-def debug(ip):
+def debug(ip, credentials):
     """ setup the db connection for the worker """
     import sqlalchemy
     from sqlalchemy.orm import sessionmaker, scoped_session
     import noodle.model as model
     
     
-    verbose = False
-    engine = sqlalchemy.create_engine(url, echo=verbose)
+    engine = sqlalchemy.create_engine(sqlalchemy_url, echo=sqlalchemy_echo)
     model.maker = sessionmaker(autoflush=False, autocommit=False, extension=model.MySessionExtension())
     model.DBSession = scoped_session(model.maker)
     model.init_model(engine)
     model.metadata.create_all(engine)
-    crawl(ip)
+    crawl(ip, credentials)
 
 if __name__ == '__main__':
     
     FORMAT = "%(asctime)-15s %(message)s"
     logging.basicConfig(level=logging.DEBUG, format=FORMAT)
     
-    logging.info("generating hostlist")
-    hostlist = []
-    for i in range(48, 80):
-        for j in range(1, 255):
-            hostlist.append("134.93." + str(i) + "." + str(j) )
-    
-    logging.info("setting up worker pool")
-    pool = Pool(processes=10, initializer=setupProcess)
-    logging.info("beginn crawling")
-    #hostlist = ["134.93.51.1","134.93.51.36","134.93.68.68"]
-    hostlist = ["134.93.50.65", "134.93.51.1"]
-    for host in hostlist:
-        #pool.apply_async(commitJob, [host], callback=report)
-        debug(host)
-        #time.sleep(60)
-    pool.close()
-    pool.join()
+    if debug_mode:
+        logging.info("running in debug mode")
+        logging.info("beginn crawling")
+        for section in sections:
+            for range in section["range"]:
+                for ip in range:
+                    debug(ip, section["credentials"])
+    else:
+        logging.info("setting up worker pool")
+        pool = Pool(processes=10, initializer=setupProcess)
+        logging.info("beginn crawling")
+        
+        for section in sections:
+            for range in section["range"]:
+                for ip in range:
+                    pool.apply_async(commitJob, [ip, section["credentials"]], callback=report)
+         
+        #for host in hostlist:
+            #pool.apply_async(commitJob, [host], callback=report)
+        #    debug(host)
+            #time.sleep(60)
+        pool.close()
+        pool.join()
     
     logging.info("deleting old entries")
-    engine = sqlalchemy.create_engine(url)
+    engine = sqlalchemy.create_engine(sqlalchemy_url, echo=sqlalchemy_echo)
     model.maker = sessionmaker(autoflush=False, autocommit=False, extension=model.MySessionExtension())
     model.DBSession = scoped_session(model.maker)
     model.init_model(engine)

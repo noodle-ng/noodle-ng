@@ -91,7 +91,7 @@ class share(DeclarativeBase):
     first_seen = Column(DateTime, nullable=False)                   # the date the crawler first indexed the item
     last_update = Column(DateTime, nullable=False)                  # date the last time the item was updated by the crawler (i.e. size changed)
     meta = relation("meta", uselist=False, backref="share")
-    __mapper_args__ = {'polymorphic_on': type}          
+    __mapper_args__ = {'polymorphic_on': type}
     
     def __init__(self, first_seen=datetime.now(), last_update=datetime.now()):
         ''' set the first_seen and last_update fields for convenience sake '''
