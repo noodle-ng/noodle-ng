@@ -1,12 +1,5 @@
 Noodle-TODO
 
-
-Crawler:
-=================================================================================
-- splitFileName Funktion so überarbeiten, dass sie Dateien richtig splittet, deren Name mit einem Punkt endet
-  Wenn die Datei keine ext hat sollte ext=Null und nicht ext="" sein
-- benutzen der pysmbc bib
-
 Frontend:
 =================================================================================
 - Anzeige von mehr als 25 Treffern pro Host ermöglichen
@@ -15,8 +8,6 @@ Frontend:
 
 Layout:
 =================================================================================
-- Alternative Ausgabe der Ergebnisse in Listenform, nicht Hostbasiert
-	- über Javascript sortierbar (Typ, Größe, Datum, ...)
 - Evtl. ein Magic Word um die Suche auf zuletzt sichtbare Hosts einzugrenzen (z.B. lastseen:36h)
 - Die Seitenumbruchberechnung (offset / length) liefert manchmal eine Seite zu viel (letzte Seite der Ergebnisse ist einfach leer)
 - Browsen eines Hosts über den Hostinfo Bereich ermöglichen (über JSON AJAX)

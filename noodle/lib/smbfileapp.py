@@ -1,3 +1,4 @@
+# TODO: Add more comments
 # Source: http://pythonpaste.org/webob/file-example.html
 from webob import Request, Response
 from webob.byterange import Range
@@ -11,6 +12,7 @@ log = logging.getLogger("proxydl")
 import smbc
 c = smbc.Context()
 
+# All these values were used for testing, but 16 KiB was the best
 #chunk_size = 4096 # 4 KiB
 chunk_size = 16384 # 16 KiB
 #chunk_size = 32768 # 32 KiB
@@ -114,6 +116,7 @@ def make_response(uri, environ):
     log.debug("Content-Length: " + str(res.content_length))
     
     res.server_protocol = "HTTP/1.1"
+    # Make sure the file gets downloaded and not played live
     res.content_type = "application/octet-stream"
     res.last_modified = last_modified
     res.etag = '%s-%s-%s' % (fs[8], fs[6], hash(f))
@@ -122,6 +125,9 @@ def make_response(uri, environ):
     return res
 
 def parseSMBuri(uri):
+    """This function parses an smb uri
+    It returns a dict of username,password,host
+    """
     # uri scheme: smb://host/path or smb://username:password@host/path
     uri = uri.split("//")[1]
     uri_netloc = uri.split("/")[0]
