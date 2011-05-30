@@ -19,11 +19,16 @@ try:
     config.read(os.path.join(sys.path[0], 'crawler.ini'))
 except:
     sys.exit("could not read crawler.ini")
-    
+
+# Get the database settings
 sqlalchemy_url = config.get('main', 'sqlalchemy.url')
 sqlalchemy_echo = config.getboolean('main', 'sqlalchemy.echo')
+#Get the multiprocessing parameters
+mp_processes = config.getint('main', 'multiproccessing.processes')
+# Get the debug setting
 debug_mode = config.getboolean('main', 'debug')
 
+# Parse main credentials as tuple
 if config.has_option("main", "credentials"):
     main_credentials = eval( config.get("main", 'credentials') )
     if not isinstance(main_credentials, tuple):
@@ -31,6 +36,7 @@ if config.has_option("main", "credentials"):
 else:
     main_credentials = ()
 
+# Parse individual sections
 sections = []
 for sectionName in config.sections():
     if sectionName != "main":   # main is not allowed to have a range
@@ -121,25 +127,30 @@ def crawl(ip=False, credentials=[["anonymous", ""]]):
     def analyze(ip, credentials):
         """ Analyze the given host and return filesystem representation """
         
-        # In the future, def analyze(ip,credentials) where credentials is [username,password] 
+        # In the future, def analyze(ip,credentials) 
+        # where credentials is [username,password] 
         # that are retrieved from a database could be used
         
         logging.info("analyzing "+ str(ip) +" with pysmbc")
         logging.info("creds: " + str(credentials))
         
+        c = smbc.Context()
         shares = []
         for (username,password) in credentials:
             if len(shares) == 0:
                 if username == 'anonymous':
                     logging.info('trying anonymous')
-                    c = smbc.Context()
+                    uri = 'smb://%s/' % ip
+                    #c = smbc.Context()
                 else:
                     logging.info('trying with %s:%s' %(username,password))
-                    def authfkt(server, share, workgroup, user, passwd):
-                        return ("WORKGROUP", username, password)
-                    c = smbc.Context(auth_fn=authfkt)
+                    #def authfkt(server, share, workgroup, user, passwd):
+                    #    return ("WORKGROUP", username, password)
+                    #c = smbc.Context(auth_fn=authfkt)
+                    uri = 'smb://%s:%s@%s/' % (username,password,ip)
                 try:
-                    host = c.opendir('smb://%s/' % ip)
+                    #host = c.opendir('smb://%s/' % ip)
+                    host = c.opendir(uri)
                     #logging.debug(host)
                     shares = host.getdents()
                     #logging.debug(shares)
@@ -417,7 +428,7 @@ if __name__ == '__main__':
                     debug(ip, section["credentials"])
     else:
         logging.info("setting up worker pool")
-        pool = Pool(processes=10, initializer=setupProcess)
+        pool = Pool(processes=mp_processes, initializer=setupProcess)
         logging.info("beginn crawling")
         
         for section in sections:
