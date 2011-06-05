@@ -9,6 +9,9 @@ from sqlalchemy.types import Integer, Unicode, DateTime, Float, Binary, Numeric
 
 from noodle.model import DeclarativeBase, metadata, DBSession
 
+# dirty switch to 3rd party iptools (renaming will be soon)
+from noodle.lib.iptools import ip2long as ipToInt, long2ip as intToIp 
+
 videoExt = [u"avi", u"mkv", u"mp4", u"mpv", u"mov", u"mpg", u"divx", u"vdr"]
 audioExt = [u"mp3", u"aac", u"ogg", u"m4a", u"wav"]
 
@@ -225,25 +228,12 @@ class ping(statistic):
         self.date = date
         
       
-def ipToInt(IP):
-    ''' 255.255.255.255 => 4294967295 '''
-    IntIP=0
-    count=3
-    for i in IP.split("."):
-        if i!='0':
-            IntIP+=int(i)*256**count
-        count-=1           
-    return IntIP
-
-def intToIp(IntIP):
-    IP=""
-    for i in [(int(IntIP) & item[0]) >> 8*item[1] for item in [[255 << 8*k,k] for k in xrange(3,-1,-1)]]:
-        IP+=str(i)+"."
-    return IP[:-1]
         
 class host(DeclarativeBase):
     __tablename__ = 'hosts'
     id = Column(Integer, primary_key=True)
+    
+    # asdecimal=True may be dangerous when using iptools 
     ip_as_int = Column("ip", Numeric(precision=10, scale=0, asdecimal=True), nullable=False)
     name = Column(Unicode(256))
     services = relation(share, primaryjoin = and_(id == share.host_id, share.parent_id == None), backref="host")
@@ -256,7 +246,8 @@ class host(DeclarativeBase):
         self.ip_as_int = ipToInt(IP)
     
     def getIP(self):
-        return intToIp(self.ip_as_int)
+	# fixed bug by explicit cast to int (ugly in my eyes)
+        return intToIp(int(self.ip_as_int))
     
     def getPrettyShareSize(self):
         return makePretty(self.sharesize)

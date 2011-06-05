@@ -15,7 +15,8 @@ from noodle.lib.utils import pingSMB
 
 import noodle.model.share as s
 from noodle.model.share import audioExt, videoExt, mediaExt
-from noodle.model.share import ipToInt, intToIp
+# dirty switch to 3rd party iptools (renaming will be soon)
+from noodle.lib.iptools import ip2long as ipToInt, long2ip as intToIp
 
 from noodle.model.pinboard import post
 
@@ -238,7 +239,7 @@ class RootController(BaseController):
     @expose('json')
     def ping(self, ip=False):
         host = DBSession.query(s.host).filter(s.host.ip_as_int == ipToInt(ip)).first()
-        result = pingSMB(ip)
+	result = pingSMB(ip)
         if host:
             DBSession.add(s.ping(host, result))
             DBSession.commit()

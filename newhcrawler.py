@@ -324,7 +324,10 @@ def crawl(ip=False, credentials=[["anonymous", ""]]):
     import time
     import socket as sk
     import noodle.model as model
-    from noodle.model.share import ipToInt, intToIp, host, serviceSMB, folder, file
+    from noodle.model.share import host, serviceSMB, folder, file
+    # dirty switch to 3rd party iptools (renaming will be soon)
+    from noodle.lib.iptools import ip2long as ipToInt, long2ip as intToIp
+
     
     startTime = time.time()
     
