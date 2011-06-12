@@ -239,7 +239,7 @@ class RootController(BaseController):
     @expose('json')
     def ping(self, ip=False):
         host = DBSession.query(s.host).filter(s.host.ip_as_int == ipToInt(ip)).first()
-	result = pingSMB(ip)
+        result = pingSMB(ip)
         if host:
             DBSession.add(s.ping(host, result))
             DBSession.commit()
