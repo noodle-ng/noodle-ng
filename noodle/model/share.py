@@ -9,8 +9,7 @@ from sqlalchemy.types import Integer, Unicode, DateTime, Float, Binary, Numeric
 
 from noodle.model import DeclarativeBase, metadata, DBSession
 
-# dirty switch to 3rd party iptools (renaming will be soon)
-from noodle.lib.iptools import ip2long as ipToInt, long2ip as intToIp 
+from noodle.lib.utils import ipToInt, intToIp 
 
 videoExt = [u"avi", u"mkv", u"mp4", u"mpv", u"mov", u"mpg", u"divx", u"vdr"]
 audioExt = [u"mp3", u"aac", u"ogg", u"m4a", u"wav"]

@@ -15,8 +15,7 @@ from noodle.lib.utils import pingSMB
 
 import noodle.model.share as s
 from noodle.model.share import audioExt, videoExt, mediaExt
-# dirty switch to 3rd party iptools (renaming will be soon)
-from noodle.lib.iptools import ip2long as ipToInt, long2ip as intToIp
+from noodle.lib.utils import ipToInt, intToIp
 
 from noodle.model.pinboard import post
 
