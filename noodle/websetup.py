@@ -19,8 +19,9 @@ def setup_app(command, conf, vars):
     # Load the models
     from noodle import model
     print "Creating tables"
-    model.metadata.create_all(bind=config['pylons.app_globals'].sa_engine)
-
+    model.metadata.create_all(bind=config['pylons.app_globals'].sa_engine,checkfirst=False)
+    #checkfirst=False is needed due to a problem in setting up an sqlite db
+    
     #testhost = model.share.host()
     #testhost.ip = "134.93.51.1"
     

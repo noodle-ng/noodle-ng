@@ -18,13 +18,13 @@ config = ConfigParser.SafeConfigParser({'here': sys.path[0]})
 try:
     config.read(os.path.join(sys.path[0], 'crawler.ini'))
 except:
-    sys.exit("could not read crawler.ini")
+    sys.exit("Could not read crawler.ini")
 
 # Get the database settings
 sqlalchemy_url = config.get('main', 'sqlalchemy.url')
 sqlalchemy_echo = config.getboolean('main', 'sqlalchemy.echo')
 #Get the multiprocessing parameters
-mp_processes = config.getint('main', 'multiproccessing.processes')
+mp_processes = config.getint('main', 'processes')
 # Get the debug setting
 debug_mode = config.getboolean('main', 'debug')
 
@@ -64,8 +64,7 @@ for sectionName in config.sections():
         for item in section_credentials:
             section["credentials"].append(item)
             
-
-# smbc_type
+# smbc_type constants
 # 3 = Share
 # 7 = Directory
 # 8 = File
@@ -127,50 +126,6 @@ def crawl(ip=False, credentials=[["anonymous", ""]]):
     def analyze(ip, credentials):
         """ Analyze the given host and return filesystem representation """
         
-        # In the future, def analyze(ip,credentials) 
-        # where credentials is [username,password] 
-        # that are retrieved from a database could be used
-        
-        logging.info("analyzing "+ str(ip) +" with pysmbc")
-        logging.info("creds: " + str(credentials))
-        
-        c = smbc.Context()
-        shares = []
-        for (username,password) in credentials:
-            if len(shares) == 0:
-                if username == 'anonymous':
-                    logging.info('trying anonymous')
-                    uri = 'smb://%s/' % ip
-                    #c = smbc.Context()
-                else:
-                    logging.info('trying with %s:%s' %(username,password))
-                    #def authfkt(server, share, workgroup, user, passwd):
-                    #    return ("WORKGROUP", username, password)
-                    #c = smbc.Context(auth_fn=authfkt)
-                    uri = 'smb://%s:%s@%s/' % (username,password,ip)
-                try:
-                    #host = c.opendir('smb://%s/' % ip)
-                    host = c.opendir(uri)
-                    #logging.debug(host)
-                    shares = host.getdents()
-                    #logging.debug(shares)
-                    break
-                except:
-                    logging.info('failed. trying again')
-                    continue
-        
-        if len(shares) == 0:
-            logging.debug('I have found no (accessible) samba share here on %s' % ip)
-            return False
-        
-        #logging.debug('I found something on %s:\n%s' % (ip,shares))
-        #logging.debug('I came there as %s:%s' % (username,password))
-        
-        myService = serviceSMB()
-        myService.username = unicode(username)
-        myService.password = unicode(password)
-        #myService = ''
-        
         def walker(c,dir,path):
             # dir must be smbc.Dir
             """ This function walks recursively through the directory you give him
@@ -180,7 +135,8 @@ def crawl(ip=False, credentials=[["anonymous", ""]]):
             #logging.info(path)
             
             theFolder = folder()
-            theFolder.name = unicode(path.split('/')[-2],'utf-8')
+            #theFolder.name = unicode(path.split('/')[-2],'utf-8')
+            theFolder.name = path.split('/')[-2]
             
             #logging.debug("%s in %s" %(dir,path))
             #logging.debug("walking through %s:" %path.split('/')[-2])
@@ -218,8 +174,10 @@ def crawl(ip=False, credentials=[["anonymous", ""]]):
                     
                     name,extension = os.path.splitext(entry.name)
                     extension = extension[1:]
-                    myFile.name = unicode(name,'utf-8')
-                    myFile.extension = unicode(extension,'utf-8')
+                    #myFile.name = unicode(name,'utf-8')
+                    myFile.name = name
+                    #myFile.extension = unicode(extension,'utf-8')
+                    myFile.extension = extension
                     #myFile = name+'.'+extension
                     try:
                         f = c.open(path+entry.name)
@@ -242,31 +200,68 @@ def crawl(ip=False, credentials=[["anonymous", ""]]):
                 
             return theFolder
         
-        for share in shares:
-            logging.info(share.name)
-            if share.smbc_type == SMBC_SHARE:
-                path = "smb://%s/%s/" % (ip,share.name)
-                #logging.info(path)
-                try:
-                    dir = c.opendir(path)
-                    #logging.debug('In %s I have %s' % (share.name,dir.getdents()))
-                except:
-                    # So this share is not accessible, who cares! Next one please!
-                    continue
-                # Now we have to loop through all the content of share
-                # So we start the walker
-                theFolder = walker(c,dir,path)
-                #logging.debug(theFolder)
-                theFolder.name = unicode(share.name)
-                myService.children.append(theFolder)
-                #myService += theFolder
+        logging.info("analyzing "+ str(ip) +" with pysmbc")
+        logging.info("creds: " + str(credentials))
         
+        c = smbc.Context()
+        shares = []
+        services = []
+        
+        for (username,password) in credentials:
+            if username == 'anonymous':
+                logging.info('trying anonymous')
+                uri = 'smb://%s/' % ip
+            else:
+                logging.info('trying with %s:%s' %(username,password))
+                uri = 'smb://%s:%s@%s/' % (username,password,ip)
+            try:
+                host = c.opendir(uri)
+                #logging.debug(host)
+                shares = host.getdents()
+                #logging.debug(shares)
+                
+            except:
+                #logging.info('failed. trying again')
+                continue
+            
+            if len(shares) != 0:
+                logging.debug('I found something on %s:\n%s' % (ip,shares))
+                logging.debug('I came there as %s:%s' % (username,password))
+                myService = serviceSMB()
+                myService.username = unicode(username)
+                myService.password = unicode(password)
+                
+                for share in shares:
+                    logging.info(share.name)
+                    if share.smbc_type == SMBC_SHARE:
+                        path = "smb://%s/%s/" % (ip,share.name)
+                        #logging.info(path)
+                        try:
+                            dir = c.opendir(path)
+                            #logging.debug('In %s I have %s' % (share.name,dir.getdents()))
+                        except:
+                            # So this share is not accessible, who cares! Next one please!
+                            continue
+                        # Now we have to loop through all the content of share
+                        # So we start the walker
+                        theFolder = walker(c,dir,path)
+                        #logging.debug(theFolder)
+                        theFolder.name = unicode(share.name)
+                        myService.children.append(theFolder)
+                        #myService += theFolder
+                        services.append(myService)
+                #endfor
+            #endif
+            
+        if len(shares) == 0:
+            logging.debug('I have found no (accessible) samba share here on %s' % ip)
+            return False
         # Trying to completely kill the smbContext
         c = None
         del c
         
         #logging.info(myService)
-        return myService
+        return services
     
     def mergeTree(pdb, premote):
         """ merges the tree from the db (pdb) with the new crawled tree (premote) """
@@ -326,7 +321,6 @@ def crawl(ip=False, credentials=[["anonymous", ""]]):
     import noodle.model as model
     from noodle.model.share import host, serviceSMB, folder, file
     from noodle.lib.utils import ipToInt, intToIp
-
     
     startTime = time.time()
     
@@ -352,32 +346,55 @@ def crawl(ip=False, credentials=[["anonymous", ""]]):
         session.add(myhost)
         
         logging.debug(str(ip) + " analyzing Host")
-        remoteService = analyze(ip, credentials)
-        if not remoteService:
+        remoteServices = analyze(ip, credentials)
+        if not remoteServices:
             # got no valid data
             return
         
-        hasServiceSMB = False
-        for service in myhost.services:
-            if isinstance(service, serviceSMB):
-                hasServiceSMB = True
-                myserviceSMB = service
-        if not hasServiceSMB:
-            myserviceSMB = serviceSMB()
-            myserviceSMB.host = myhost
-            session.add(myserviceSMB)
+        print myhost.services
         
-        logging.debug( str(ip) + " merging Tree" )
-        mergeTree(myserviceSMB, remoteService)
-        myserviceSMB.username = remoteService.username
-        myserviceSMB.password = remoteService.password
+        hasServiceSMB = False
+        
+        for remoteService in remoteServices:
+            for service in myhost.services:
+                if isinstance(service, serviceSMB):
+                    if (service.username == remoteService.username) \
+                        and (service.password == remoteService.password):
+                        myserviceSMB = service
+                    else:
+                        myserviceSMB = serviceSMB()
+                        myserviceSMB.host = myhost
+                        session.add(myserviceSMB)
+                    
+                    logging.debug( str(ip) + " merging Tree" )
+                    mergeTree(myserviceSMB, remoteService)
+                    myserviceSMB.username = remoteService.username
+                    myserviceSMB.password = remoteService.password
+                    
+#        for service in myhost.services:
+#            if isinstance(service, serviceSMB):
+#                for remoteService in remoteServices:
+#                    if (service.username == remoteService.username) and (service.pasword == remoteService.password):
+#                        myserviceSMB = service
+#                    
+#            if isinstance(service, serviceSMB):
+#                hasServiceSMB = True
+#                myserviceSMB = service
+#        if not hasServiceSMB:
+#            myserviceSMB = serviceSMB()
+#            myserviceSMB.host = myhost
+#            session.add(myserviceSMB)
+#        
+#        logging.debug( str(ip) + " merging Tree" )
+#        mergeTree(myserviceSMB, remoteService)
+#        myserviceSMB.username = remoteService.username
+#        myserviceSMB.password = remoteService.password
         
         logging.debug( str(ip) + " done merging" )
         myhost.crawl_time_in_s = int( time.time() - startTime )
         session.commit()
         session.close()
     return
-
 
 def commitJob(ip, credentials):
     startTime = time.time()
@@ -400,14 +417,11 @@ def setupProcess():
     model.init_model(engine)
     model.metadata.create_all(engine)
 
-
-
 def debug(ip, credentials):
     """ setup the db connection for the worker """
     import sqlalchemy
     from sqlalchemy.orm import sessionmaker, scoped_session
     import noodle.model as model
-    
     
     engine = sqlalchemy.create_engine(sqlalchemy_url, echo=sqlalchemy_echo)
     model.maker = sessionmaker(autoflush=False, autocommit=False, extension=model.MySessionExtension())
@@ -437,11 +451,7 @@ if __name__ == '__main__':
             for range in section["range"]:
                 for ip in range:
                     pool.apply_async(commitJob, [ip, section["credentials"]], callback=report)
-         
-        #for host in hostlist:
-            #pool.apply_async(commitJob, [host], callback=report)
-        #    debug(host)
-            #time.sleep(60)
+        
         pool.close()
         pool.join()
     
