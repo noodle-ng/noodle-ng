@@ -49,43 +49,42 @@ class meta(DeclarativeBase):
 
 class metaAtom(DeclarativeBase):
     __tablename__ = 'meta_atoms'
-    __mapper_args__ = {'polymorphic_on': type}
     id = Column(Integer, primary_key=True)
     meta_id = Column(Integer, ForeignKey('meta.id'), nullable=False)
     type = Column(Unicode(20), nullable=False)
+    __mapper_args__ = {'polymorphic_on': type}
 
 class metaVideo(metaAtom):
     __tablename__ = 'meta_video'
-    __mapper_args__ = {'polymorphic_identity': 'video'}
     id = Column(Integer, ForeignKey('meta_atoms.id'), primary_key=True)
     xres = Column(Integer)
     yres = Column(Integer)
     bitrate = Column(Integer)
     codec = Column(Unicode(20))
     fps = Column(Float())
+    __mapper_args__ = {'polymorphic_identity': 'video'}
 
 class metaAudio(metaAtom):
     __tablename__ = 'meta_audio'
-    __mapper_args__ = {'polymorphic_identity': 'audio'}
     id = Column(Integer, ForeignKey('meta_atoms.id'), primary_key=True)
     bitrate = Column(Integer)
     rate = Column(Integer)
     language = Column(Unicode(20))
     channels = Column(Integer)
     codec = Column(Unicode(20))
+    __mapper_args__ = {'polymorphic_identity': 'audio'}
 
 class metaPicture(metaAtom):
     __tablename__ = 'meta_picture'
-    __mapper_args__ = {'polymorphic_identity': 'picture'}
     id = Column(Integer, ForeignKey('meta_atoms.id'), primary_key=True)
     xres = Column(Integer)
     yres = Column(Integer)
     codec = Column(Unicode(20))
     data = Column(Binary())
+    __mapper_args__ = {'polymorphic_identity': 'picture'}
 
 class share(DeclarativeBase):
     __tablename__ = 'shares'
-    __mapper_args__ = {'polymorphic_on': type}
     id = Column(Integer, primary_key=True)
     parent_id = Column(Integer, ForeignKey('shares.id'))
     host_id = Column(Integer, ForeignKey('hosts.id'), nullable=False)
@@ -99,6 +98,7 @@ class share(DeclarativeBase):
     # date the last time the item was updated by the crawler (i.e. size changed)
     last_update = Column(DateTime, nullable=False)
     meta = relation("meta", uselist=False, backref="share")
+    __mapper_args__ = {'polymorphic_on': type}
     
     def __init__(self, first_seen=datetime.now(), last_update=datetime.now()):
         ''' set the first_seen and last_update fields for convenience sake '''
@@ -162,9 +162,9 @@ class share(DeclarativeBase):
 
 
 class folderish(share):
-    __mapper_args__ = {'polymorphic_identity': 'folderish'}
     children = relation("share", cascade="all", backref=backref('parent', remote_side="share.id"))
     #children = relation("share", cascade="all, delete-orphan", backref=backref('parent', remote_side="share.id"))
+    __mapper_args__ = {'polymorphic_identity': 'folderish'}
     
     def getMediaType(self):
         return "folder"
@@ -172,20 +172,20 @@ class folderish(share):
     mediaType = property(getMediaType)
 
 class content(share):
-    __mapper_args__ = {'polymorphic_identity': 'content'}
     size = Column(Numeric(precision=32, scale=0, asdecimal=True))
     #host = relation("host")
+    __mapper_args__ = {'polymorphic_identity': 'content'}
 
 class folder(folderish, content):
     __mapper_args__ = {'polymorphic_identity': 'folder'}
 
 class file(content):
-    __mapper_args__ = {'polymorphic_identity': 'file'}
     # file extension, if there is one
     extension = Column(Unicode(256))
     # can hold a hash value to find same files, could be nice 
     # to introduce load balancing to proxyDownloader
     hash = Column(Unicode(256))
+    __mapper_args__ = {'polymorphic_identity': 'file'}
     
     def getPath(self):
         return self.parent.getPath()
@@ -198,9 +198,9 @@ class file(content):
             return unicode(path)
 
 class service(folderish):
-    __mapper_args__ = {'polymorphic_identity': 'service'}
     username = Column(Unicode(256))
     password = Column(Unicode(256))
+    __mapper_args__ = {'polymorphic_identity': 'service'}
     
     def getService(self):
         return self
@@ -219,15 +219,15 @@ class serviceFTP(service):
 
 class statistic(DeclarativeBase):
     __tablename__ = 'statistic'
-    __mapper_args__ = {'polymorphic_on': type}
     id = Column(Integer, primary_key=True)
     host_id = Column(Integer, ForeignKey('hosts.id'), nullable=False)
     type = Column(Unicode(20), nullable=False)
     date = Column(DateTime, nullable=False)
+    __mapper_args__ = {'polymorphic_on': type}
 
 class ping(statistic):
-    __mapper_args__ = {'polymorphic_identity': 'ping'}
     value = Column(Float, nullable=True)
+    __mapper_args__ = {'polymorphic_identity': 'ping'}
     
     def __init__(self, host=None, value=None, date=datetime.now()):
         self.host = host
