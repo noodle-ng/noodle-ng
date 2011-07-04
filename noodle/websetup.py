@@ -12,15 +12,14 @@ __all__ = ['setup_app']
 
 log = logging.getLogger(__name__)
 
-
 def setup_app(command, conf, vars):
     """Place any commands to setup noodle here"""
     load_environment(conf.global_conf, conf.local_conf)
     # Load the models
     from noodle import model
     print "Creating tables"
-    model.metadata.create_all(bind=config['pylons.app_globals'].sa_engine,checkfirst=False)
-    #checkfirst=False is needed due to a problem in setting up an sqlite db
+    # checkfirst=False is needed due to a problem in setting up an sqlite db
+    model.metadata.create_all(bind=config['pylons.app_globals'].sa_engine, checkfirst=False)
     
     #testhost = model.share.host()
     #testhost.ip = "134.93.51.1"
@@ -46,4 +45,4 @@ def setup_app(command, conf, vars):
     #model.DBSession.add(folder)
     
     transaction.commit()
-    print "Successfully setup"
+    print "Setup successful"
