@@ -14,6 +14,7 @@ from noodle.lib.utils import ipToInt, intToIp
 videoExt = [u"avi", u"mkv", u"mp4", u"mpv", u"mov", u"mpg", u"divx", u"vdr"]
 audioExt = [u"mp3", u"aac", u"ogg", u"m4a", u"wav"]
 
+# [:] to make copy of existing list
 mediaExt = videoExt[:]
 mediaExt.extend(audioExt)
 
@@ -30,7 +31,7 @@ def makePretty(value):
         if cs < 10:
             return u"%3.1f" % (cs) + ' ' + suffix
         if cs < 1024:
-            return unicode( int(cs) ) + ' ' + suffix
+            return unicode(int(cs)) + ' ' + suffix
     return u"very big"
 
 class meta(DeclarativeBase):
@@ -38,21 +39,21 @@ class meta(DeclarativeBase):
     id = Column(Integer, primary_key=True)
     share_id = Column(Integer, ForeignKey('shares.id'), nullable=False)
     atoms = relation("metaAtom", backref="meta")
-    title   = Column(Unicode(128))
-    artist  = Column(Unicode(128))
-    album   = Column(Unicode(128))
-    date    = Column(DateTime)
+    title = Column(Unicode(128))
+    artist = Column(Unicode(128))
+    album = Column(Unicode(128))
+    date = Column(DateTime)
     comment = Column(Unicode(1024))
-    genre   = Column(Unicode(128))
-    length  = Column(Float())
+    genre = Column(Unicode(128))
+    length = Column(Float())
 
 class metaAtom(DeclarativeBase):
     __tablename__ = 'meta_atoms'
+    __mapper_args__ = {'polymorphic_on': type}
     id = Column(Integer, primary_key=True)
     meta_id = Column(Integer, ForeignKey('meta.id'), nullable=False)
     type = Column(Unicode(20), nullable=False)
-    __mapper_args__ = {'polymorphic_on': type}
-    
+
 class metaVideo(metaAtom):
     __tablename__ = 'meta_video'
     __mapper_args__ = {'polymorphic_identity': 'video'}
@@ -84,16 +85,20 @@ class metaPicture(metaAtom):
 
 class share(DeclarativeBase):
     __tablename__ = 'shares'
+    __mapper_args__ = {'polymorphic_on': type}
     id = Column(Integer, primary_key=True)
     parent_id = Column(Integer, ForeignKey('shares.id'))
     host_id = Column(Integer, ForeignKey('hosts.id'), nullable=False)
-    name = Column(Unicode(256))                     # the filename without extension if the item has one
+    # the filename without extension if the item has one
+    name = Column(Unicode(256))
     type = Column(Unicode(20), nullable=False)
-    date = Column(DateTime)                         # the creation date of the item which the hosts provides
-    first_seen = Column(DateTime, nullable=False)                   # the date the crawler first indexed the item
-    last_update = Column(DateTime, nullable=False)                  # date the last time the item was updated by the crawler (i.e. size changed)
+    # the creation date of the item which the hosts provides
+    date = Column(DateTime)
+    # the date the crawler first indexed the item
+    first_seen = Column(DateTime, nullable=False)
+    # date the last time the item was updated by the crawler (i.e. size changed)
+    last_update = Column(DateTime, nullable=False)
     meta = relation("meta", uselist=False, backref="share")
-    __mapper_args__ = {'polymorphic_on': type}
     
     def __init__(self, first_seen=datetime.now(), last_update=datetime.now()):
         ''' set the first_seen and last_update fields for convenience sake '''
@@ -112,6 +117,7 @@ class share(DeclarativeBase):
         if hasattr(self, "parent"):
             if self.parent != None:
                 return self.parent.getHost()
+        return None
     
     def getService(self):
         return self.parent.getService()
@@ -121,19 +127,15 @@ class share(DeclarativeBase):
     
     def getShowPath(self):
         return unicode(self.parent.getShowPath()) + "/" + self.name
-        
+    
     def getPrettySize(self):
         return makePretty(self.size)
-    
-    prettySize = property(getPrettySize)
     
     def getNameWithExt(self):
         if hasattr(self, "extension"):
             if self.extension != None:
                 return self.name + u"." + self.extension
         return self.name
-    
-    nameWithExt = property(getNameWithExt)
     
     def getMediaType(self):
         if hasattr(self, "extension"):
@@ -142,8 +144,6 @@ class share(DeclarativeBase):
             elif self.extension in audioExt:
                 return "audio"
         return "file"
-    
-    mediaType = property(getMediaType)
     
     def getCredentials(self):
         service = self.getService()
@@ -155,28 +155,37 @@ class share(DeclarativeBase):
             creds["username"] = "anonymous"
             creds["password"] = ""
         return creds
+    
+    prettySize = property(getPrettySize)
+    nameWithExt = property(getNameWithExt)
+    mediaType = property(getMediaType)
 
 
 class folderish(share):
     __mapper_args__ = {'polymorphic_identity': 'folderish'}
     children = relation("share", cascade="all", backref=backref('parent', remote_side="share.id"))
     #children = relation("share", cascade="all, delete-orphan", backref=backref('parent', remote_side="share.id"))
+    
     def getMediaType(self):
         return "folder"
-    mediaType = property(getMediaType)
     
+    mediaType = property(getMediaType)
+
 class content(share):
     __mapper_args__ = {'polymorphic_identity': 'content'}
     size = Column(Numeric(precision=32, scale=0, asdecimal=True))
     #host = relation("host")
-    
+
 class folder(folderish, content):
     __mapper_args__ = {'polymorphic_identity': 'folder'}
 
 class file(content):
     __mapper_args__ = {'polymorphic_identity': 'file'}
-    extension = Column(Unicode(256))    # file extension, if there is one
-    hash = Column(Unicode(256))         # can hold a hash value to find same files
+    # file extension, if there is one
+    extension = Column(Unicode(256))
+    # can hold a hash value to find same files, could be nice 
+    # to introduce load balancing to proxyDownloader
+    hash = Column(Unicode(256))
     
     def getPath(self):
         return self.parent.getPath()
@@ -184,11 +193,10 @@ class file(content):
     def getShowPath(self):
         path = unicode(self.parent.getShowPath()) + "/" + self.name
         if self.extension != None:
-            return unicode( path + "." + self.extension )
+            return unicode(path + "." + self.extension)
         else:
             return unicode(path)
 
- 
 class service(folderish):
     __mapper_args__ = {'polymorphic_identity': 'service'}
     username = Column(Unicode(256))
@@ -205,18 +213,18 @@ class service(folderish):
 
 class serviceSMB(service):
     __mapper_args__ = {'polymorphic_identity': 'serviceSMB'}
-    
+
 class serviceFTP(service):
     __mapper_args__ = {'polymorphic_identity': 'serviceFTP'}
 
 class statistic(DeclarativeBase):
     __tablename__ = 'statistic'
+    __mapper_args__ = {'polymorphic_on': type}
     id = Column(Integer, primary_key=True)
     host_id = Column(Integer, ForeignKey('hosts.id'), nullable=False)
     type = Column(Unicode(20), nullable=False)
     date = Column(DateTime, nullable=False)
-    __mapper_args__ = {'polymorphic_on': type}
-    
+
 class ping(statistic):
     __mapper_args__ = {'polymorphic_identity': 'ping'}
     value = Column(Float, nullable=True)
@@ -225,18 +233,15 @@ class ping(statistic):
         self.host = host
         self.value = value
         self.date = date
-        
-      
-        
+
 class host(DeclarativeBase):
     __tablename__ = 'hosts'
     id = Column(Integer, primary_key=True)
-    
     # asdecimal=True may be dangerous when using iptools 
     ip_as_int = Column("ip", Numeric(precision=10, scale=0, asdecimal=True), nullable=False)
     name = Column(Unicode(256))
-    services = relation(share, primaryjoin = and_(id == share.host_id, share.parent_id == None), backref="host")
-    statistics = relation(statistic, primaryjoin = id == statistic.host_id, backref="host")
+    services = relation(share, primaryjoin=and_(id == share.host_id, share.parent_id == None), backref="host")
+    statistics = relation(statistic, primaryjoin=id == statistic.host_id, backref="host")
     last_crawled = Column(DateTime)
     crawl_time_in_s = Column(Integer)
     sharesize = Column(Numeric(precision=32, scale=0, asdecimal=True))
@@ -245,7 +250,7 @@ class host(DeclarativeBase):
         self.ip_as_int = ipToInt(IP)
     
     def getIP(self):
-	# fixed bug by explicit cast to int (ugly in my eyes)
+    # fixed bug by explicit cast to int (ugly in my eyes)
         return intToIp(int(self.ip_as_int))
     
     def getPrettyShareSize(self):
@@ -254,4 +259,3 @@ class host(DeclarativeBase):
     ip = property(getIP, setIP)
     prettyShareSize = property(getPrettyShareSize)
 
-    
