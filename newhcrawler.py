@@ -1,19 +1,25 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from multiprocessing import Pool
 import time
 import logging
 import sys, os
 from datetime import datetime, timedelta
-import sqlalchemy
-from sqlalchemy.orm import sessionmaker, scoped_session
-import noodle.model as model
-from noodle.lib.utils import pingSMB
-import noodle.lib.iptools as iptools
+from multiprocessing import Pool
+import ConfigParser
+
 import smbc
 
-import ConfigParser
+import sqlalchemy
+from sqlalchemy.orm import sessionmaker, scoped_session
+
+import noodle.model as model
+
+from noodle.lib.utils import pingSMB
+import noodle.lib.iptools as iptools
+
+# Parsing configuration
+
 config = ConfigParser.SafeConfigParser({'here': sys.path[0]})
 try:
     config.read(os.path.join(sys.path[0], 'crawler.ini'))
@@ -30,7 +36,7 @@ debug_mode = config.getboolean('main', 'debug')
 
 # Parse main credentials as tuple
 if config.has_option("main", "credentials"):
-    main_credentials = eval( config.get("main", 'credentials') )
+    main_credentials = eval(config.get("main", 'credentials'))
     if not isinstance(main_credentials, tuple):
         main_credentials = (main_credentials,)
 else:
@@ -39,21 +45,20 @@ else:
 # Parse individual sections
 sections = []
 for sectionName in config.sections():
-    if sectionName != "main":   # main is not allowed to have a range
-        sections.append({})
-        section = sections[-1]
+    if sectionName != "main":      # main is not allowed to have a range
+        section = {}
         section["name"] = sectionName
         section["range"] = []
         try:
             range = config.get(sectionName, 'range')
         except:
-            print "WARNING: no range found for " + sectionName
+            print "WARNING: no range found for %s" % sectionName
             continue
         for singlerange in range.split(","):
             singlerange = singlerange.strip()
-            section["range"].append( iptools.IpRangeList(singlerange) )
+            section["range"].append(iptools.IpRangeList(singlerange))
         if config.has_option(sectionName, "credentials"):
-            section_credentials = eval( config.get(sectionName, 'credentials') )
+            section_credentials = eval(config.get(sectionName, 'credentials'))
             if not isinstance(section_credentials, tuple):
                 section_credentials = (section_credentials,)
         else:
@@ -63,14 +68,15 @@ for sectionName in config.sections():
             section["credentials"].append(item)
         for item in section_credentials:
             section["credentials"].append(item)
-            
+        sections.append(section)
+
 # smbc_type constants
 # 3 = Share
 # 7 = Directory
 # 8 = File
-SMBC_SHARE =  3
+SMBC_SHARE = 3
 SMBC_FOLDER = 7
-SMBC_FILE =   8
+SMBC_FILE = 8
 
 def crawl(ip=False, credentials=[["anonymous", ""]]):
     
@@ -88,22 +94,22 @@ def crawl(ip=False, credentials=[["anonymous", ""]]):
         return entry
     
     def splitFileName(s):
-        name=''
-        ext=''
+        name = ''
+        ext = ''
         
         #reverse fileName s
-        s=s[::-1]
+        s = s[::-1]
         #if no dot in fileName s
-        position=s.find('.')
+        position = s.find('.')
         
         #if no dot in fileName s
         if position == -1 :
-            name=s[::-1]
+            name = s[::-1]
         #else split by dot
         else:
-            ext=s[:position][::-1]
-            name=s[position+1:][::-1]
-        return [name,ext]
+            ext = s[:position][::-1]
+            name = s[position + 1:][::-1]
+        return [name, ext]
     
     def getFolder(parent, path):
         qfolder = False
@@ -126,7 +132,7 @@ def crawl(ip=False, credentials=[["anonymous", ""]]):
     def analyze(ip, credentials):
         """ Analyze the given host and return filesystem representation """
         
-        def walker(c,dir,path):
+        def walker(c, dir, path):
             # dir must be smbc.Dir
             """ This function walks recursively through the directory you give him
             and returns folder()-Objects according to the model.
@@ -163,7 +169,7 @@ def crawl(ip=False, credentials=[["anonymous", ""]]):
                     except:
                         #logging.debug('Opening %s went wrong' % newPath)
                         continue
-                    myFolder = walker(c,newDir,newPath)
+                    myFolder = walker(c, newDir, newPath)
                     theFolder.children.append(myFolder)
                     #theFolder += entry.name+'\n'+myFolder+'\n'
                     
@@ -172,7 +178,7 @@ def crawl(ip=False, credentials=[["anonymous", ""]]):
                     myFile = file()
                     #myFile = ''
                     
-                    name,extension = os.path.splitext(entry.name)
+                    name, extension = os.path.splitext(entry.name)
                     extension = extension[1:]
                     #myFile.name = unicode(name,'utf-8')
                     myFile.name = name
@@ -180,7 +186,7 @@ def crawl(ip=False, credentials=[["anonymous", ""]]):
                     myFile.extension = extension
                     #myFile = name+'.'+extension
                     try:
-                        f = c.open(path+entry.name)
+                        f = c.open(path + entry.name)
                     except:
                         #logging.debug('Opening %s went wrong' % path+entry.name)
                         continue
@@ -200,20 +206,20 @@ def crawl(ip=False, credentials=[["anonymous", ""]]):
                 
             return theFolder
         
-        logging.info("analyzing "+ str(ip) +" with pysmbc")
+        logging.info("analyzing " + str(ip) + " with pysmbc")
         logging.info("creds: " + str(credentials))
         
         c = smbc.Context()
         shares = []
         services = []
         
-        for (username,password) in credentials:
+        for (username, password) in credentials:
             if username == 'anonymous':
                 logging.info('trying anonymous')
                 uri = 'smb://%s/' % ip
             else:
-                logging.info('trying with %s:%s' %(username,password))
-                uri = 'smb://%s:%s@%s/' % (username,password,ip)
+                logging.info('trying with %s:%s' % (username, password))
+                uri = 'smb://%s:%s@%s/' % (username, password, ip)
             try:
                 host = c.opendir(uri)
                 #logging.debug(host)
@@ -225,8 +231,8 @@ def crawl(ip=False, credentials=[["anonymous", ""]]):
                 continue
             
             if len(shares) != 0:
-                logging.debug('I found something on %s:\n%s' % (ip,shares))
-                logging.debug('I came there as %s:%s' % (username,password))
+                logging.debug('I found something on %s:\n%s' % (ip, shares))
+                logging.debug('I came there as %s:%s' % (username, password))
                 myService = serviceSMB()
                 myService.username = unicode(username)
                 myService.password = unicode(password)
@@ -234,7 +240,7 @@ def crawl(ip=False, credentials=[["anonymous", ""]]):
                 for share in shares:
                     logging.info(share.name)
                     if share.smbc_type == SMBC_SHARE:
-                        path = "smb://%s/%s/" % (ip,share.name)
+                        path = "smb://%s/%s/" % (ip, share.name)
                         #logging.info(path)
                         try:
                             dir = c.opendir(path)
@@ -244,7 +250,7 @@ def crawl(ip=False, credentials=[["anonymous", ""]]):
                             continue
                         # Now we have to loop through all the content of share
                         # So we start the walker
-                        theFolder = walker(c,dir,path)
+                        theFolder = walker(c, dir, path)
                         #logging.debug(theFolder)
                         theFolder.name = unicode(share.name)
                         myService.children.append(theFolder)
@@ -332,7 +338,7 @@ def crawl(ip=False, credentials=[["anonymous", ""]]):
         session = model.DBSession()
         
         try:
-            myhost = session.query(host).filter( host.ip_as_int==ipToInt(ip) ).first()
+            myhost = session.query(host).filter(host.ip_as_int == ipToInt(ip)).first()
         except:
             myhost = host()
             myhost.ip = ip
@@ -366,7 +372,7 @@ def crawl(ip=False, credentials=[["anonymous", ""]]):
                         myserviceSMB.host = myhost
                         session.add(myserviceSMB)
                     
-                    logging.debug( str(ip) + " merging Tree" )
+                    logging.debug(str(ip) + " merging Tree")
                     mergeTree(myserviceSMB, remoteService)
                     myserviceSMB.username = remoteService.username
                     myserviceSMB.password = remoteService.password
@@ -390,8 +396,8 @@ def crawl(ip=False, credentials=[["anonymous", ""]]):
 #        myserviceSMB.username = remoteService.username
 #        myserviceSMB.password = remoteService.password
         
-        logging.debug( str(ip) + " done merging" )
-        myhost.crawl_time_in_s = int( time.time() - startTime )
+        logging.debug(str(ip) + " done merging")
+        myhost.crawl_time_in_s = int(time.time() - startTime)
         session.commit()
         session.close()
     return
@@ -465,7 +471,7 @@ if __name__ == '__main__':
     session = model.DBSession()
     cutoff = datetime.now() - timedelta(days=24)
     for host in session.query(model.host).filter(model.host.last_crawled < cutoff).all():
-        logging.info( "deleting shares / host from host: " + str(host.name) )
+        logging.info("deleting shares / host from host: " + str(host.name))
         session.query(model.share.share).filter(model.share.share.host_id == host.id).delete()
         session.delete(host)
     session.commit()
