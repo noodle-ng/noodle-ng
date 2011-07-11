@@ -220,10 +220,9 @@ def crawl(ip=False, credentials=[["anonymous", ""]]):
         for (username, password) in credentials:
             shares = []
             if username == 'anonymous':
-                logging.info('trying anonymous')
                 uri = 'smb://%s/' % ip
             else:
-                logging.info('trying with %s:%s' % (username, password))
+                if debug_mode: logging.info('trying with %s:%s' % (username, password))
                 uri = 'smb://%s:%s@%s/' % (username, password, ip)
             try:
                 host = c.opendir(uri)
@@ -232,7 +231,7 @@ def crawl(ip=False, credentials=[["anonymous", ""]]):
                 #logging.debug(shares)
                 
                 for share in host.getdents():
-                    logging.info(share.name)
+                    if debug_mode: logging.info(share.name)
                     if share.smbc_type == SMBC_SHARE:
                         path = uri +"%s/" % (share.name)
                         #logging.info(path)
@@ -245,8 +244,8 @@ def crawl(ip=False, credentials=[["anonymous", ""]]):
                             continue
                 
                 if len(shares) > 0:
-                    logging.debug('I found something on %s:\n%s' % (ip, shares))
-                    logging.debug('I came there as %s:%s' % (username, password))
+                    if debug_mode: logging.debug('I found something on %s:\n%s' % (ip, shares))
+                    if debug_mode: logging.debug('I came there as %s:%s' % (username, password))
                     myService = serviceSMB()
                     myService.username = unicode(username)
                     myService.password = unicode(password)
@@ -328,7 +327,7 @@ def crawl(ip=False, credentials=[["anonymous", ""]]):
     
     if getDnsEntry(ip):
         # check if the server is running a smb server  // timeout 3s
-        if not pingSMB(ip, timeout=3):
+        if not pingSMB(ip, timeout=1):
             return
         
         session = model.DBSession()
