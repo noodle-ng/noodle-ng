@@ -3,7 +3,9 @@
 
 import time
 import logging
-import sys, os
+import sys, os, commands
+import re
+import socket as sk
 from datetime import datetime, timedelta
 from multiprocessing import Pool
 import ConfigParser
@@ -14,9 +16,11 @@ import sqlalchemy
 from sqlalchemy.orm import sessionmaker, scoped_session
 
 import noodle.model as model
+from noodle.model.share import host, serviceSMB, folder, file
 
-from noodle.lib.utils import pingSMB
+from noodle.lib.utils import pingSMB,ipToInt, intToIp
 import noodle.lib.iptools as iptools
+
 
 # Parsing configuration
 
@@ -207,13 +211,14 @@ def crawl(ip=False, credentials=[["anonymous", ""]]):
             return theFolder
         
         logging.info("analyzing " + str(ip) + " with pysmbc")
-        logging.info("creds: " + str(credentials))
+        #logging.info("creds: " + str(credentials))
         
         c = smbc.Context()
-        shares = []
+        
         services = []
         
         for (username, password) in credentials:
+            shares = []
             if username == 'anonymous':
                 logging.info('trying anonymous')
                 uri = 'smb://%s/' % ip
@@ -223,45 +228,45 @@ def crawl(ip=False, credentials=[["anonymous", ""]]):
             try:
                 host = c.opendir(uri)
                 #logging.debug(host)
-                shares = host.getdents()
+                #shares = host.getdents()
                 #logging.debug(shares)
                 
-            except:
-                #logging.info('failed. trying again')
-                continue
-            
-            if len(shares) != 0:
-                logging.debug('I found something on %s:\n%s' % (ip, shares))
-                logging.debug('I came there as %s:%s' % (username, password))
-                myService = serviceSMB()
-                myService.username = unicode(username)
-                myService.password = unicode(password)
-                
-                for share in shares:
+                for share in host.getdents():
                     logging.info(share.name)
                     if share.smbc_type == SMBC_SHARE:
-                        path = "smb://%s/%s/" % (ip, share.name)
+                        path = uri +"%s/" % (share.name)
                         #logging.info(path)
                         try:
                             dir = c.opendir(path)
                             #logging.debug('In %s I have %s' % (share.name,dir.getdents()))
+                            shares.append(share)
                         except:
                             # So this share is not accessible, who cares! Next one please!
                             continue
-                        # Now we have to loop through all the content of share
+                
+                if len(shares) > 0:
+                    logging.debug('I found something on %s:\n%s' % (ip, shares))
+                    logging.debug('I came there as %s:%s' % (username, password))
+                    myService = serviceSMB()
+                    myService.username = unicode(username)
+                    myService.password = unicode(password)
+                    
+                    for share in shares:
+                        path = uri +"%s/" % (share.name)
+                        dir = c.opendir(path)
+                        # Now we loop through all the content of share
                         # So we start the walker
                         theFolder = walker(c, dir, path)
                         #logging.debug(theFolder)
                         theFolder.name = unicode(share.name)
+                        
                         myService.children.append(theFolder)
                         #myService += theFolder
-                        services.append(myService)
-                #endfor
-            #endif
+                    services.append(myService)
+            except:
+                #logging.info('failed. trying again')
+                continue
             
-        if len(shares) == 0:
-            logging.debug('I have found no (accessible) samba share here on %s' % ip)
-            return False
         # Trying to completely kill the smbContext
         c = None
         del c
@@ -319,20 +324,11 @@ def crawl(ip=False, credentials=[["anonymous", ""]]):
     if not ip:
         raise
     
-    import commands
-    import re
-    from datetime import datetime
-    import time
-    import socket as sk
-    import noodle.model as model
-    from noodle.model.share import host, serviceSMB, folder, file
-    from noodle.lib.utils import ipToInt, intToIp
-    
     startTime = time.time()
     
     if getDnsEntry(ip):
-        # check if the server is running a smb server  // timeout 1s
-        if not pingSMB(ip, timeout=1):
+        # check if the server is running a smb server  // timeout 3s
+        if not pingSMB(ip, timeout=3):
             return
         
         session = model.DBSession()
@@ -340,16 +336,16 @@ def crawl(ip=False, credentials=[["anonymous", ""]]):
         try:
             myhost = session.query(host).filter(host.ip_as_int == ipToInt(ip)).first()
         except:
-            myhost = host()
-            myhost.ip = ip
+            myhost = None
             
         if not myhost:
             myhost = host()
             myhost.ip = ip
+            session.add(myhost)
         
         myhost.name = getDnsEntry(myhost.ip)
         myhost.last_crawled = datetime.now()
-        session.add(myhost)
+        #session.add(myhost)
         
         logging.debug(str(ip) + " analyzing Host")
         remoteServices = analyze(ip, credentials)
@@ -357,44 +353,25 @@ def crawl(ip=False, credentials=[["anonymous", ""]]):
             # got no valid data
             return
         
-        print myhost.services
-        
-        hasServiceSMB = False
+        #print myhost.services
+        #print remoteServices
         
         for remoteService in remoteServices:
+            myserviceSMB = None
             for service in myhost.services:
                 if isinstance(service, serviceSMB):
                     if (service.username == remoteService.username) \
                         and (service.password == remoteService.password):
                         myserviceSMB = service
-                    else:
-                        myserviceSMB = serviceSMB()
-                        myserviceSMB.host = myhost
-                        session.add(myserviceSMB)
-                    
-                    logging.debug(str(ip) + " merging Tree")
-                    mergeTree(myserviceSMB, remoteService)
-                    myserviceSMB.username = remoteService.username
-                    myserviceSMB.password = remoteService.password
-                    
-#        for service in myhost.services:
-#            if isinstance(service, serviceSMB):
-#                for remoteService in remoteServices:
-#                    if (service.username == remoteService.username) and (service.pasword == remoteService.password):
-#                        myserviceSMB = service
-#                    
-#            if isinstance(service, serviceSMB):
-#                hasServiceSMB = True
-#                myserviceSMB = service
-#        if not hasServiceSMB:
-#            myserviceSMB = serviceSMB()
-#            myserviceSMB.host = myhost
-#            session.add(myserviceSMB)
-#        
-#        logging.debug( str(ip) + " merging Tree" )
-#        mergeTree(myserviceSMB, remoteService)
-#        myserviceSMB.username = remoteService.username
-#        myserviceSMB.password = remoteService.password
+            if not myserviceSMB:
+                myserviceSMB = serviceSMB()
+                myserviceSMB.host = myhost
+                session.add(myserviceSMB)
+            
+            logging.debug(str(ip) + " merging Tree")
+            mergeTree(myserviceSMB, remoteService)
+            myserviceSMB.username = remoteService.username
+            myserviceSMB.password = remoteService.password
         
         logging.debug(str(ip) + " done merging")
         myhost.crawl_time_in_s = int(time.time() - startTime)
@@ -413,10 +390,6 @@ def report(value):
 
 def setupProcess():
     """ setup the db connection for the worker """
-    import sqlalchemy
-    from sqlalchemy.orm import sessionmaker, scoped_session
-    import noodle.model as model
-    
     engine = sqlalchemy.create_engine(sqlalchemy_url, echo=sqlalchemy_echo)
     model.maker = sessionmaker(autoflush=False, autocommit=False, extension=model.MySessionExtension())
     model.DBSession = scoped_session(model.maker)
@@ -425,10 +398,6 @@ def setupProcess():
 
 def debug(ip, credentials):
     """ setup the db connection for the worker """
-    import sqlalchemy
-    from sqlalchemy.orm import sessionmaker, scoped_session
-    import noodle.model as model
-    
     engine = sqlalchemy.create_engine(sqlalchemy_url, echo=sqlalchemy_echo)
     model.maker = sessionmaker(autoflush=False, autocommit=False, extension=model.MySessionExtension())
     model.DBSession = scoped_session(model.maker)
