@@ -164,7 +164,7 @@ class share(DeclarativeBase):
 class folderish(share):
     children = relation("share", cascade="all", backref=backref('parent', remote_side="share.id"))
     #children = relation("share", cascade="all, delete-orphan", backref=backref('parent', remote_side="share.id"))
-    __mapper_args__ = {'polymorphic_identity': 'folderish'}
+    __mapper_args__ = {'polymorphic_identity': u'folderish'}
     
     def getMediaType(self):
         return "folder"
@@ -174,10 +174,10 @@ class folderish(share):
 class content(share):
     size = Column(Numeric(precision=32, scale=0, asdecimal=True))
     #host = relation("host")
-    __mapper_args__ = {'polymorphic_identity': 'content'}
+    __mapper_args__ = {'polymorphic_identity': u'content'}
 
 class folder(folderish, content):
-    __mapper_args__ = {'polymorphic_identity': 'folder'}
+    __mapper_args__ = {'polymorphic_identity': u'folder'}
 
 class file(content):
     # file extension, if there is one
@@ -185,7 +185,7 @@ class file(content):
     # can hold a hash value to find same files, could be nice 
     # to introduce load balancing to proxyDownloader
     hash = Column(Unicode(256))
-    __mapper_args__ = {'polymorphic_identity': 'file'}
+    __mapper_args__ = {'polymorphic_identity': u'file'}
     
     def getPath(self):
         return self.parent.getPath()
@@ -200,7 +200,7 @@ class file(content):
 class service(folderish):
     username = Column(Unicode(256))
     password = Column(Unicode(256))
-    __mapper_args__ = {'polymorphic_identity': 'service'}
+    __mapper_args__ = {'polymorphic_identity': u'service'}
     
     def getService(self):
         return self
@@ -212,10 +212,10 @@ class service(folderish):
         return u""
 
 class serviceSMB(service):
-    __mapper_args__ = {'polymorphic_identity': 'serviceSMB'}
+    __mapper_args__ = {'polymorphic_identity': u'serviceSMB'}
 
 class serviceFTP(service):
-    __mapper_args__ = {'polymorphic_identity': 'serviceFTP'}
+    __mapper_args__ = {'polymorphic_identity': u'serviceFTP'}
 
 class statistic(DeclarativeBase):
     __tablename__ = 'statistic'
@@ -227,7 +227,7 @@ class statistic(DeclarativeBase):
 
 class ping(statistic):
     value = Column(Float, nullable=True)
-    __mapper_args__ = {'polymorphic_identity': 'ping'}
+    __mapper_args__ = {'polymorphic_identity': u'ping'}
     
     def __init__(self, host=None, value=None, date=datetime.now()):
         self.host = host
