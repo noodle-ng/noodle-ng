@@ -1,1 +1,2 @@
-﻿Please take a look in the online documentation at http://code.google.com/p/noodle-ng/wiki/INSTALLATION
+﻿For the most current installation instructions please refer to
+https://code.google.com/p/noodle-ng/wiki/Installation
