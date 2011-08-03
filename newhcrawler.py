@@ -60,7 +60,17 @@ for sectionName in config.sections():
             continue
         for singlerange in range.split(","):
             singlerange = singlerange.strip()
-            section["range"].append(iptools.IpRangeList(singlerange))
+            if len(singlerange.split("-")) > 1:
+                # this is a ip range
+                try:
+                    range_start, range_stop = singlerange.split("-")
+                except:
+                    print "%s is not a valid range!" % singlerange
+                    sys.exit(1)
+                section["range"].append(iptools.IpRangeList( (range_start, range_stop) ))
+            else:
+                # its a single ip adress or CDIR
+                section["range"].append(iptools.IpRangeList(singlerange))
         if config.has_option(sectionName, "credentials"):
             section_credentials = eval(config.get(sectionName, 'credentials'))
             if not isinstance(section_credentials, tuple):
