@@ -1,0 +1,9 @@
+#commentform{
+	border-width:1px;
+	border-style:solid;
+	border-color:blue;
+	padding-left:20px;
+}
+label {
+	font-weight: bold;
+}

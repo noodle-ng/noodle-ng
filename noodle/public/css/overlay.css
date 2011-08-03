@@ -1,0 +1,45 @@
+/* the following code is from http://flowplayer.org/tools/demos/overlay/external.html lesson 8 */
+
+/* the overlayed element */
+.apple_overlay {
+	
+	/* initially overlay is hidden */
+	display:none;
+	
+	/* growing background image */
+	background-image:url(/images/overlay/white.png);
+	
+	/* 
+		width after the growing animation finishes
+		height is automatically calculated
+	*/
+	width:640px;		
+	
+	/* some padding to layout nested elements nicely  */
+	padding:35px;
+
+	/* a little styling */	
+	font-size:11px;
+}
+
+/* default close button positioned on upper right corner */
+.apple_overlay .close {
+	background-image:url(/images/overlay/close.png);
+	position:absolute; right:5px; top:5px;
+	cursor:pointer;
+	height:35px;
+	width:35px;
+}
+
+/* use a semi-transparent image for the overlay */
+	#overlay {
+		background-image:url(/images/overlay/gray.png);
+		color:#efefef;
+		height:450px;
+	}
+	
+	/* container for external content. uses vertical scrollbar, if needed */
+	div.contentWrap {
+		height:500px;
+		overflow-y:auto;
+	}

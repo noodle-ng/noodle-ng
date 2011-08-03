@@ -1,0 +1,2 @@
+﻿For the most current installation instructions please refer to
+https://code.google.com/p/noodle-ng/wiki/Installation

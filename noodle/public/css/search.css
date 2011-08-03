@@ -1,0 +1,53 @@
+#searchbox {
+	text-align: center;
+}
+
+#searchform {
+
+}
+
+#searchfield {
+	margin: 1em;
+	padding: 0.2em;
+}
+
+#container {
+	border-width:1px;
+	border-style:solid;
+	border-color:blue;
+	padding-left:1em;
+}
+
+#resultshead {
+
+}
+
+#onlineImage {
+	
+}
+
+#hostname {
+	font-size:1.75em;
+	color:#0040C0;
+	text-align:center;
+}
+
+#aboutHost {
+	text-align:right;
+}
+
+#files {
+	margin-top:1em;
+}
+
+#list {
+	margin-top:0em;
+}
+
+#aboutShare {
+
+}
+
+#sharename {
+
+}

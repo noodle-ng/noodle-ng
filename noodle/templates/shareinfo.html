@@ -1,0 +1,23 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+
+<head>
+	<meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+	<title>Noodle NG</title>
+	<link rel="icon" href="${tg.url('/favicon.png')}" type="image/png" />
+	 
+</head>
+
+<body>
+	<iframe src="${tg.url( '/VLCControls-069b2fb/player.html?shareID=' + str(share.id) )}" width="99%" height="410" name="Player">
+		<p>
+			Ihr Browser kann leider keine eingebetteten Frames anzeigen: Sie k&ouml;nnen die eingebettete Seite &uuml;ber den folgenden Verweis aufrufen: <a href="${tg.url( '/VLCControls-069b2fb/player.html?shareID=' + str(share.id) )}">Player</a>
+		</p>
+	</iframe>
+</body>
+
+</html>

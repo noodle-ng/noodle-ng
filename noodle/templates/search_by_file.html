@@ -1,0 +1,147 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <xi:include href="master.html" />
+
+<head>
+  <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+  <title>Noodle NG</title>
+  <link rel="stylesheet" type="text/css" href="${tg.url('/css/filelist.css')}" />
+  <link rel="stylesheet" type="text/css" href="${tg.url('/css/overlay.css')}" />
+  <script type="text/javascript" src="${tg.url('/js/MochiKit/MochiKit.js')}"></script>
+  <script type="text/javascript" src="${tg.url('/js/pingHost.js')}"></script>
+  <script type="text/javascript" src="${tg.url('/js/jquery.tools.min.js')}"></script>
+</head>
+
+<body>
+<div id="searchbox" style="text-align: center;">
+	<form id="searchform" method="get" action="/search_by_file" name="search">
+		<input id="searchfield" maxlength="2048" size="40" name="query" value="${query}"/>
+		<br />
+		<input id="searchbutton" type="submit" value="search" />
+	</form>
+</div>
+
+<div class="apple_overlay" id="overlay">
+
+	<!-- the external content is loaded inside this tag -->
+	<div class="contentWrap"></div>
+
+</div>
+
+<table id="filelisting" summary="File list">
+	<thead>
+		<tr>
+		
+			<!-- this is a template that is being reused for building the sort graphics / links -->
+			<span py:def="sortselection(sortby, sortorder)">
+				<span py:choose="">
+					<span py:when="sortorder == None">
+						<a href="${tg.url('/search_by_file?query=' + query + '&amp;offset=' + str(offset) + '&amp;sortby=' + str(sortby) + '&amp;sortorder=desc')}">
+							<img src="${tg.url('/images/sort_sw.jpg')}" alt="sort" width="28" height="30" />
+						</a>
+					</span>
+					<span py:when="sortorder == 'asc'">
+						<a href="${tg.url('/search_by_file?query=' + query + '&amp;offset=' + str(offset) + '&amp;sortby=' + str(sortby) + '&amp;sortorder=desc')}">
+							<img src="${tg.url('/images/sort_up.jpg')}" alt="sort" width="28" height="30" />
+						</a>
+					</span>
+					<span py:when="sortorder == 'desc'">
+						<a href="${tg.url('/search_by_file?query=' + query + '&amp;offset=' + str(offset) + '&amp;sortby=' + str(sortby) + '&amp;sortorder=asc')}">
+							<img src="${tg.url('/images/sort_down.jpg')}" alt="sort" width="28" height="30" />
+						</a>
+					</span>
+				</span>
+				
+			</span>
+			<th scope="col" style="width:25px"></th>
+			<th scope="col" style="width:38px"></th>
+			<th scope="col">
+				<span py:choose="">
+					<span py:when="sortby == 'filename'">${sortselection('filename', sortorder)}</span>
+					<py:otherwise>${sortselection('filename', None)}</py:otherwise>
+				</span>
+				Name
+			</th>
+			<th scope="col" style="width:100px; text-align:center;">
+				<span py:choose="">
+					<span py:when="sortby == 'filesize'">${sortselection('filesize', sortorder)}</span>
+					<py:otherwise>${sortselection('filesize', None)}</py:otherwise>
+				</span>
+				Gr&ouml;&szlig;e
+			</th>
+			<th scope="col" style="width:100px; text-align:center;">
+				<span py:choose="">
+					<span py:when="sortby == 'date'">${sortselection('date', sortorder)}</span>
+					<py:otherwise>${sortselection('date', None)}</py:otherwise>
+				</span>
+				Datum
+			</th>
+			<th scope="col" style="width:120px; text-align:center;">
+				<span py:choose="">
+					<span py:when="sortby == 'host'">${sortselection('host', sortorder)}</span>
+					<py:otherwise>${sortselection('host', None)}</py:otherwise>
+				</span>
+				Host
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr py:for="file in files">
+			<td id="file_online"><img name="ping_Host" value="${file.host.ip}" src="${tg.url('/images/ping_grey.png')}" /></td>
+			<td id="file_icon">
+				<a href="${tg.url( '/shareInfo?shareID=' + str(file.id) )}" rel="#overlay" style="text-decoration:none">
+					<img name="media type" src="${tg.url('/images/file_icons/' + file.mediaType + '_25x25.jpg')}" />
+				</a>
+			</td>
+			<td id="file_name"><a href="${tg.url( '/proxyDownload?id=' + str(file.id) )}">${file.nameWithExt}</a></td>
+			<td id="file_size">${file.prettySize}</td>
+			<td id="file_date"><span py:if="file.date" py:replace="file.date.strftime('%d.%m.%Y')" /></td>
+			<td id="file_host"><a href="${smbURLprefix}${file.host.name}"><span py:replace="file.host.name.split('.')[0].upper()" /></a></td>
+		</tr>
+	</tbody>
+</table>
+
+<center>
+	NoooOOOOooodle
+	<br />
+	<span py:for="page in pages">
+		<a py:if="not page['current']" href="${tg.url('/search_by_file?query=' + query + '&amp;offset=' + str(page['offset'])  + '&amp;sortby=' + sortby + '&amp;sortorder=' + sortorder )}">${page["number"]}</a>
+		<span py:if="page['current']">${page["number"]}</span>
+	</span>
+</center>
+
+<!-- make all links with the 'rel' attribute open overlays -->
+<script>
+
+$(function() {
+
+	// if the function argument is given to overlay,
+	// it is assumed to be the onBeforeLoad event listener
+	$("a[rel]").overlay({
+
+		mask: {
+		color: '#000000',
+		loadSpeed: 200,
+		opacity: 0.9
+			},
+		effect: 'apple',
+
+		onBeforeLoad: function() {
+
+			// grab wrapper element inside content
+			var wrap = this.getOverlay().find(".contentWrap");
+
+			// load the page specified in the trigger
+			wrap.load(this.getTrigger().attr("href"));
+		}
+
+	});
+});
+</script>
+
+</body>
+</html>

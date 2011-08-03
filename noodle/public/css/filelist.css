@@ -1,0 +1,79 @@
+/* ------------------
+ styling for the tables 
+   ------------------   */
+
+
+body
+{
+	line-height: 1.6em;
+}
+
+img 
+{
+	border:none
+}
+
+#filelisting
+{
+	font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+	font-size: 12px;
+	background: #fff;
+	margin: 45px;
+	width: 700px;
+	border-collapse: collapse;
+	text-align: left;
+}
+
+
+#filelisting th
+{
+	font-size: 14px;
+	font-weight: bold;
+	padding: 10px 8px;
+	border-bottom: 2px solid;
+}
+
+#filelisting td
+{
+	border-bottom: 1px solid #ccc;
+	padding: 6px 8px;
+	font-size: 14px;
+}
+
+table#filelisting {
+	table-layout:fixed
+}
+
+/* Online Indicator */
+td#file_online {
+	height: 25px;
+	padding-left: 0;
+	padding-right: 0;
+}
+
+td#file_icon {
+	height: 25px;
+	padding-left: 5px;
+}
+
+td#file_name {
+	overflow: hidden;
+}
+
+td#file_size {
+	text-align: center;
+}
+
+td#file_date {
+	text-align: center;
+}
+
+td#file_host {
+	text-align: center;
+}
+
+#filelisting tbody tr:hover td
+{
+	color: #009;
+}
+

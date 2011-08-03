@@ -1,0 +1,50 @@
+#Apache configuration File
+#Read README.txt
+#1. This file is the apache2 config file. It should be added to your apache config folder. If you mounting your app as a site wide package, you can rename the file to something like 002-Noodle_NG and put anything else that you want to be available in 001-someapp; When done copy to apache config folder. On Debian copy to /etc/apache2/sites-available/
+#cp ./apache/Noodle_NG /etc/apache2/sites-available/Noodle_NG
+#a2ensite Noodle_NG
+
+
+#Default location for tg2 project is /usr/local/turbogears/Noodle_NG. That is where you should put your project. This folder should be outside of apache location. Your package should not be installed into python site-package.
+
+#2. Alias/Allow apache to serve static content.
+Alias /Noodle_NG/images /usr/local/turbogears/Noodle_NG/Noodle_NG/public/images
+Alias /Noodle_NG/css /usr/local/turbogears/Noodle_NG/Noodle_NG/public/css
+Alias /Noodle_NG/javascript /usr/local/turbogears/Noodle_NG/Noodle_NG/public/javascript
+
+#[Optional] Embeded mode (http://example.com/Noodle_NG).For big websites with a lot of memory and visitors. As of version 0.4.16 deamon mode is default and it should be used on Linux. On windows use embeded mode.
+ 
+#WSGIScriptAlias /Noodle_NG /usr/local/turbogears/Noodle_NG/apache/Noodle_NG.wsgi
+
+#3. Test if modwsgi is working. Uncomment below line, and go to http://localhost/test:
+#WSGIScriptAlias /test /usr/local/turbogears/Noodle_NG/apache/test.wsgi
+
+#4. [Optional] Sitewide (http://example.com/)
+#Alias /images /usr/local/turbogears/Noodle_NG/Noodle_NG/public/images
+#Alias /css /usr/local/turbogears/Noodle_NG/Noodle_NG/public/css
+#Alias /javascript /usr/local/turbogears/Noodle_NG/Noodle_NG/public/javascript
+#WSGIScriptAlias / /usr/local/turbogears/apache/Noodle_NG.wsgi
+
+#5.Deamon mode with 10 threads and 3 processes. For small to medium website.
+WSGIDaemonProcess Noodle_NG threads=10 processes=3
+WSGIProcessGroup Noodle_NG
+WSGIScriptAlias /Noodle_NG /usr/local/turbogears/Noodle_NG/apache/Noodle_NG.wsgi
+
+#6. Directory Permission.
+<Directory /usr/local/turbogears/Noodle_NG/apache>
+Order deny,allow
+Allow from all
+</Directory>
+
+#7. [Optional] If you want to use Virtualhost apache settings. 
+#Sample Virtual Host configuration would look like this:
+
+#<Directory /usr/local/turbogears/Noodle_NG/apache>
+#    Order allow,deny
+#    Allow from all
+#</Directory>
+
+#NameVirtualHost *:81
+#<VirtualHost *:81>
+#    WSGIScriptAlias / /usr/local/turbogears/Noodle_NG/apache/Noodle_NG.wsgi
+#</VirtualHost>

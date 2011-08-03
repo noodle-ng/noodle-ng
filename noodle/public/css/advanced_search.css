@@ -1,0 +1,47 @@
+#searchform {
+	text-align: center;	
+}
+
+#searchfield {
+		margin: 1em;
+		padding: 0.2em;
+}
+
+#extension {
+	margin-right: 5px;
+}
+
+#container{
+	text-align: left;
+    margin: 0.5em auto;
+    width: 400px;
+    padding: 0.5em;
+    border: 2px ridge silver;		
+}
+
+#standardtypes{
+	float:left; 
+	width:10em; 
+	padding:1em; 
+	margin-right:1em;
+	margin-bottom:1em;
+}
+
+#othertypes{
+	padding:1em 1em 0 1em;
+	margin-left:12em;
+}
+
+#othertypes:after { 
+	content:"clear"; 
+	clear:left; 
+	display:block; 
+	height:0; 
+	overflow:hidden; 
+	visibility:hidden; 
+}
+
+input.extras {
+    disabled:disabled;
+    color:#00FF00;
+}

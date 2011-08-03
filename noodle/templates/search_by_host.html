@@ -1,0 +1,91 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <xi:include href="master.html" />
+
+<head>
+  <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+  <title>Noodle NG</title>
+  <link rel="stylesheet" type="text/css" href="${tg.url('/css/search_by_host.css')}" />
+  <script type="text/javascript" src="${tg.url('/js/MochiKit/MochiKit.js')}"></script>
+  <script type="text/javascript" src="${tg.url('/js/pingHost.js')}"></script>
+</head>
+
+<body>
+<div id="searchbox">
+	<form id="searchform" method="get" action="/search_by_host" name="search">
+		<input id="searchfield" maxlength="2048" size="40" name="query" value="${query}"/>
+		<br />
+		<input id="searchbutton" type="submit" value="search" />
+	</form>
+</div>
+<p py:for="host in hosts">
+	<div id="host_container">
+	
+		<div id="sidebar_left">
+			<img id="onlineImage" name="ping_Host" value="${host.ip}" src="/images/ping_grey.png" />
+			<br />
+			Wohnheim: <span py:replace="host.name.split('.')[1].upper()" />
+			<br />
+			Aktualisiert: <span py:replace="host.last_crawled.strftime('%d.%m.%Y')" />
+			<br />
+			Share: <span py:replace="host.prettyShareSize" />
+		</div>
+		
+		<div id="host_content">
+		
+			<div id="host_name">
+				<a id="hostname" href="${host.path}">
+					<span py:replace="host.name.split('.')[0].upper()" />
+				</a>
+			</div>
+			
+			<div id="host_file_list">
+				<div id="host_fl_folder" py:for="result in host.resultset">
+					<!--
+					<div id="host_fl_folder_toolbox">
+						<a id="aboutShare" href="/shareInfo?shareID=${result.id}">
+							about:
+						</a>
+					</div>
+					-->
+					<div id="host_fl_folder_caption">
+						<a id="sharename" href="${result.path}">
+							${result.showpath}
+						</a>
+					</div>
+					
+	
+					<div id="host_fl_folder_contents">
+						<div id="host_fl_folder_contents_item" py:for="item in result.resultset">
+							<div id="host_fl_folder_contents_item_size">
+								${item.prettySize}
+							</div>
+							<a id="host_fl_folder_contents_item_caption" href="${tg.url( '/proxyDownload?id=' + str(item.id) )}">
+								${item.showname}
+							</a>
+						</div>
+					</div>
+						
+				</div>
+			</div>
+		
+		</div>
+
+	</div>
+</p>
+
+<center>
+	N<span py:for="page in pages">o</span>dle
+	<br />
+	<span py:for="page in pages">
+		<a py:if="not page['current']" href="${tg.url('/search_by_host?query=' + query + '&amp;offset=' + str(page['offset']))}">${page["number"]}</a>
+		<span py:if="page['current']">${page["number"]}</span>
+	</span>
+</center>
+
+</body>
+</html>
