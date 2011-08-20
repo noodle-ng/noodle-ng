@@ -48,7 +48,7 @@ def path_walk(path,visitor,data):
         visitor(data, dirpath, dirnames + filenames)
     return
 
-def stat(path):
+def stat(top):
     """Get file information (stats)
     
     For the file given by path returns a 10-tuple
@@ -65,7 +65,7 @@ def stat(path):
     
     return host.stat(path)
 
-def fopen(path):
+def fopen(top):
     """Open file.
     
     Returns file handle specified by path
