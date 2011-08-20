@@ -15,7 +15,7 @@ we can mount an smb share in the host os.
 # Enables output of results and specific errors
 DEBUG = True
 # Enables verbose output of paths, files and folders
-VERBOSE = False
+VERBOSE = True
 
 # Path definitions
 
@@ -28,8 +28,11 @@ SMB_MOUNT_ROOT = "/home/moschlar/Studium"
 # Will be used as root uri for our implementation of fs_smb
 SMB_TEST_URI = "smb://localhost/studium"
 
+FTP_MOUNT_ROOT = "/home/moschlar/.gvfs/FTP auf dns320/public/eBooks"
+FTP_TEST_URI = "ftp://dns320/public/eBooks"
+
 import os
-import fs_smb as fs
+import fs_ftp as fs
 
 def test(reference_path,test_path):
     # Generating reference list
@@ -76,10 +79,10 @@ def test(reference_path,test_path):
 
 def main():
     if DEBUG:
-        print "Now testing fs_smb"
+        print "Now testing fs_ftp"
     #import fs_os as fs
             
-    result = test(SMB_MOUNT_ROOT,SMB_TEST_URI)
+    result = test(FTP_MOUNT_ROOT,FTP_TEST_URI)
     print result
     return result
 
