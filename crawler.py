@@ -81,7 +81,7 @@ def main():
     logging.debug(locations)
     
     for location in locations:
-        pool = Pool(min(processes, len(location['hosts'])), setup_worker, (location['type'],))
+        pool = Pool(processes, setup_worker, (location['type'],))
         for hosts in location['hosts']:
             pool.map_async(crawl, hosts)
         pool.close()
