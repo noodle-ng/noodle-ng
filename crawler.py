@@ -52,38 +52,36 @@ def main():
     locations = []
     
     if len(sys.argv) > 1:
-        for arg in sys.argv[1:]:
-            url = urlparse(arg)
-            print url
-            location = {'type': url.scheme, 'hosts': [IpRange(url.hostname)], 'credentials': [(url.username,url.password)]}
-            print location
+        # Parsing  location configuration from argv
+        for i in range(1,len(sys.argv)):
+            url = urlparse(sys.argv[i])
+            location = {'name': "arg%d" % i ,'type': url.scheme, 'hosts': [IpRange(url.hostname)], 'credentials': [(url.username,url.password)]}
             locations.append(location)
-    
-    # Parsing the location configuration
-    
-    for name in [section for section in config.sections() if section != 'main']:
-        
-        location = {}
-        location['name'] = name
-        location['type'] = config.get(name, 'type')
-        location['hosts'] = []
-        for element in config.get(name, 'hosts').split(','):
-            element = element.strip()
-            if element.find('-') != -1:
-                # IP range
-                start, stop = element.split('-',1)
-                location['hosts'].append(IpRange(start.strip(), stop.strip()))
-            else:
-                # CIDR range or single IP
-                location['hosts'].append(IpRange(element))
-        location['credentials'] = []
-        for cred in config.get(name, 'credentials').split(','):
-            location['credentials'].append(tuple(cred.strip().split(':')))
-        locations.append(location)
+    else:
+        # Parsing location configuration from config file
+        for name in [section for section in config.sections() if section != 'main']:
+            
+            location = {}
+            location['name'] = name
+            location['type'] = config.get(name, 'type')
+            location['hosts'] = []
+            for element in config.get(name, 'hosts').split(','):
+                element = element.strip()
+                if element.find('-') != -1:
+                    # IP range
+                    start, stop = element.split('-',1)
+                    location['hosts'].append(IpRange(start.strip(), stop.strip()))
+                else:
+                    # CIDR range or single IP
+                    location['hosts'].append(IpRange(element))
+            location['credentials'] = []
+            for cred in config.get(name, 'credentials').split(','):
+                location['credentials'].append(tuple(cred.strip().split(':')))
+            locations.append(location)
     logging.debug(locations)
     
     for location in locations:
-        pool = Pool(processes, setup_worker, (location['type'],))
+        pool = Pool(min(processes, len(location['hosts'])), setup_worker, (location['type'],))
         for hosts in location['hosts']:
             pool.map_async(crawl, hosts)
         pool.close()
