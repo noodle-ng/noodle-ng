@@ -8,13 +8,13 @@ begin working based on the information it finds there.
 
 """
 
-import sys, os
+import sys, os, socket as sk
 import logging
 from multiprocessing import Pool
 from ConfigParser import SafeConfigParser
 from urlparse import urlparse
 
-from noodle.lib.iptools import IpRange
+from noodle.lib.iptools import IpRange,IpRangeList
 
 # Some constant values
 config_file = "crawler.ini"
@@ -43,7 +43,8 @@ def setup_worker(type):
 
 def crawl(host):
     """Starts the crawling process for one host"""
-    logging.debug("crawling %s" % host)
+    logging.debug("Crawling host %s" % host)
+    
     return
 
 def main():
@@ -52,10 +53,13 @@ def main():
     locations = []
     
     if len(sys.argv) > 1:
-        # Parsing  location configuration from argv
-        for i in range(1,len(sys.argv)):
+        debug = True
+        # Parsing location configuration from argv
+        for i in range(1, len(sys.argv)):
             url = urlparse(sys.argv[i])
-            location = {'name': "arg%d" % i ,'type': url.scheme, 'hosts': [IpRange(url.hostname)], 'credentials': [(url.username,url.password)]}
+            location = {'name': "arg%d" % i, 'type': url.scheme, 
+                        'hosts': [IpRange(sk.gethostbyname(url.hostname))], 
+                        'credentials': [(url.username,url.password)]}
             locations.append(location)
     else:
         # Parsing location configuration from config file
@@ -64,26 +68,28 @@ def main():
             location = {}
             location['name'] = name
             location['type'] = config.get(name, 'type')
-            location['hosts'] = []
+            hosts = []
             for element in config.get(name, 'hosts').split(','):
                 element = element.strip()
                 if element.find('-') != -1:
                     # IP range
-                    start, stop = element.split('-',1)
-                    location['hosts'].append(IpRange(start.strip(), stop.strip()))
+                    start, stop = element.split('-', 1)
+                    hosts.append((start.strip(), stop.strip()))
                 else:
                     # CIDR range or single IP
-                    location['hosts'].append(IpRange(element))
+                    hosts.append(element)
+            location['hosts'] = IpRangeList(*hosts)
             location['credentials'] = []
             for cred in config.get(name, 'credentials').split(','):
                 location['credentials'].append(tuple(cred.strip().split(':')))
             locations.append(location)
+    
     logging.debug(locations)
     
     for location in locations:
-        pool = Pool(processes, setup_worker, (location['type'],))
-        for hosts in location['hosts']:
-            pool.map_async(crawl, hosts)
+        logging.debug("Crawling location %s" % location['name'])
+        pool = Pool(min(processes,len(location['hosts'])), setup_worker, (location['type'],))
+        pool.map_async(crawl, location['hosts'])
         pool.close()
         pool.join()
     
