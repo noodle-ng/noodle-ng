@@ -12,15 +12,33 @@ import sys, os
 import logging
 from multiprocessing import Pool
 from ConfigParser import SafeConfigParser
+from urlparse import urlparse
 
 from noodle.lib.iptools import IpRange
 
 # Some constant values
 config_file = "crawler.ini"
 
+# Parsing the overall configuration
+
+config = SafeConfigParser({'here': sys.path[0]})
+try:
+    config.read(os.path.join(sys.path[0], config_file))
+except:
+    sys.exit("Could not read %s" % config_file)
+
+debug = config.getboolean('main', 'debug')
+if debug:
+    logging.basicConfig(level=logging.DEBUG)
+processes = config.getint('main', 'processes')
+
+sqlalchemy_url = config.get('main', 'sqlalchemy.url')
+sqlalchemy_echo = config.getboolean('main', 'sqlalchemy.echo')
+
 def setup_worker(type):
     """Sets up a worker process"""
     logging.debug("setting up worker for %s" % type)
+    
     return
 
 def crawl(host):
@@ -31,23 +49,17 @@ def crawl(host):
 def main():
     """Runs the crawler"""
     
-    # Parsing the configuration
-    
-    config = SafeConfigParser({'here': sys.path[0]})
-    try:
-        config.read(os.path.join(sys.path[0], config_file))
-    except:
-        sys.exit("Could not read %s" % config_file)
-    
-    debug = config.getboolean('main', 'debug')
-    if debug:
-        logging.basicConfig(level=logging.DEBUG)
-    processes = config.getint('main', 'processes')
-    
-    sqlalchemy_url = config.get('main', 'sqlalchemy.url')
-    sqlalchemy_echo = config.getboolean('main', 'sqlalchemy.echo')
-    
     locations = []
+    
+    if len(sys.argv) > 1:
+        for arg in sys.argv[1:]:
+            url = urlparse(arg)
+            print url
+            location = {'type': url.scheme, 'hosts': [IpRange(url.hostname)], 'credentials': [(url.username,url.password)]}
+            print location
+            locations.append(location)
+    
+    # Parsing the location configuration
     
     for name in [section for section in config.sections() if section != 'main']:
         
