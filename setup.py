@@ -37,7 +37,7 @@ setup(
         "Genshi",
         "zope.sqlalchemy >= 0.4",
         "repoze.tm2 >= 1.0a5",
-        "sqlalchemy",
+        "sqlalchemy >= 0.7",
         "tw.forms",
         ],
     setup_requires=["PasteScript >= 1.7"],

@@ -1,0 +1,9 @@
+TODO
+====
+
+- Migrate model carefully using new features of sqlalchemy 0.7 if available and useful
+  - Make new crawler use the new model exclusively
+- Cleanup and migrate templates
+- Migrate library code, while putting it all into noodle.lib
+  - Some functions now defined in model should not be there
+- Split controller (at least to SearchController and RootController) and migrate it
