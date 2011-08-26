@@ -1,0 +1,21 @@
+filesystem_test.py
+==================
+Contains test cases for filesystem implementations to verify if their output 
+is the same as from os functions,
+Implementations must be added to this file and must be configured correctly
+(e.g. mount a smb share and specify local mount point for verification)
+
+filesystem.py 
+==================
+contains an "interface" that filesystem implementations shall provide 
+to be useful for noodle
+
+fs_os.py
+==================
+"implements" filesystem.py for filesystem operations on the 
+host operating system (which of course is not very useful, but ideal for testing)
+
+fs_smb.py
+==================
+provides access to a filesystem via smb
+paths should be provided as smb://[username[:password]@]host/share[/path]
