@@ -26,7 +26,27 @@ def intToIp(ip):
 #####################################################
 # implement ping equivalent method for smb with 
 # sockets to avoid external dependencies
-#####################################################
+############################sd = sk.socket(sk.AF_INET, sk.SOCK_STREAM)#########################
+
+def hasService(host, service, timeout=1):
+    """checks if the given host is online and the port
+    corresponding to service is open"""
+    
+    if service == "ftp":
+        port = 21
+    elif service == "smb":
+        port = 445
+    else:
+        return False
+    
+    sd = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
+    sd.settimeout(timeout)
+    try:
+        sd.connect((host, port))
+        sd.close()
+        return True
+    except:
+        return False
 
 def pingSMB(ip, timeout=1):
     """ checks if the given host is online and has a running smb server using pythons sockets"""
@@ -49,6 +69,30 @@ def getDnsEntry(ip):
         entry = None
     return entry
 
+def getHostByAddr(ip):
+    """Returns hostname for ip address """
+    try:
+        host = sk.gethostbyaddr(ip)[0]
+    except:
+        host = None
+    return host
+
+def getHostByName(host):
+    """Returns ip address for host"""
+    try:
+        ip = sk.gethostbyname(host)
+    except:
+        ip = None
+    return ip
+
+def getHostAndAddr(ip):
+    """Returns hostname and ip address for ip address or host"""
+    try:
+        (name,alias,address) = sk.gethostbyaddr(ip)
+        data = (name, address[0])
+    except:
+        data = (None, None)
+    return data
 
 #####################################################
 # helper function that should be part of the

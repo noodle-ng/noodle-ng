@@ -32,7 +32,7 @@ def makePretty(value):
             return unicode(int(cs)) + ' ' + suffix
     return u"very big"
 
-class share(DeclarativeBase):
+class Share(DeclarativeBase):
     __tablename__ = 'shares'
     id = Column(Integer, primary_key=True)
     parent_id = Column(Integer, ForeignKey('shares.id'))
@@ -110,8 +110,8 @@ class share(DeclarativeBase):
     mediaType = property(getMediaType)
 
 
-class folderish(share):
-    children = relation("share", cascade="all", backref=backref('parent', remote_side="share.id"))
+class Folderish(Share):
+    children = relation(Share, cascade="all", backref=backref('parent', remote_side="Share.id"))
     #children = relation("share", cascade="all, delete-orphan", backref=backref('parent', remote_side="share.id"))
     __mapper_args__ = {'polymorphic_identity': u'folderish'}
     
@@ -120,15 +120,15 @@ class folderish(share):
     
     mediaType = property(getMediaType)
 
-class content(share):
+class Content(Share):
     size = Column(Numeric(precision=32, scale=0, asdecimal=True))
     #host = relation("host")
     __mapper_args__ = {'polymorphic_identity': u'content'}
 
-class folder(folderish, content):
+class Folder(Folderish, Content):
     __mapper_args__ = {'polymorphic_identity': u'folder'}
 
-class file(content):
+class File(Content):
     # file extension, if there is one
     extension = Column(Unicode(256))
     # can hold a hash value to find same files, could be nice 
@@ -146,7 +146,7 @@ class file(content):
         else:
             return unicode(path)
 
-class service(folderish):
+class Service(Folderish):
     username = Column(Unicode(256))
     password = Column(Unicode(256))
     __mapper_args__ = {'polymorphic_identity': u'service'}
@@ -160,13 +160,13 @@ class service(folderish):
     def getShowPath(self):
         return u""
 
-class serviceSMB(service):
+class ServiceSMB(Service):
     __mapper_args__ = {'polymorphic_identity': u'serviceSMB'}
 
-class serviceFTP(service):
+class ServiceFTP(Service):
     __mapper_args__ = {'polymorphic_identity': u'serviceFTP'}
 
-class statistic(DeclarativeBase):
+class Statistic(DeclarativeBase):
     __tablename__ = 'statistic'
     id = Column(Integer, primary_key=True)
     host_id = Column(Integer, ForeignKey('hosts.id'), nullable=False)
@@ -174,7 +174,7 @@ class statistic(DeclarativeBase):
     date = Column(DateTime, nullable=False)
     __mapper_args__ = {'polymorphic_on': type}
 
-class ping(statistic):
+class Ping(Statistic):
     value = Column(Float, nullable=True)
     __mapper_args__ = {'polymorphic_identity': u'ping'}
     
@@ -183,27 +183,35 @@ class ping(statistic):
         self.value = value
         self.date = date
 
-class host(DeclarativeBase):
+class Host(DeclarativeBase):
     __tablename__ = 'hosts'
     id = Column(Integer, primary_key=True)
     # asdecimal=True may be dangerous when using iptools 
-    ip_as_int = Column("ip", Numeric(precision=10, scale=0, asdecimal=True), nullable=False)
+    #ip_as_int = Column("ip", Numeric(precision=10, scale=0, asdecimal=True), nullable=False)
+    ip = Column(BigInteger, nullable=False)
     name = Column(Unicode(256))
-    services = relation(share, primaryjoin=and_(id == share.host_id, share.parent_id == None), backref="host")
-    statistics = relation(statistic, primaryjoin=id == statistic.host_id, backref="host")
+    services = relation(Share, primaryjoin=and_(id == Share.host_id, Share.parent_id == None), backref="host")
+    statistics = relation(Statistic, primaryjoin=id == Statistic.host_id, backref="host")
     last_crawled = Column(DateTime)
     crawl_time_in_s = Column(Integer)
     sharesize = Column(Numeric(precision=32, scale=0, asdecimal=True))
     
-    def setIP(self, IP):
-        self.ip_as_int = ipToInt(IP)
+    def __init__(self,ip,name=None):
+        self.ip = ipToInt(ip)
+        if name:
+            self.name = name
+    
+    def setIP(self, ip):
+        #self.ip_as_int = ipToInt(IP)
+        self.ip = ipToInt(ip)
     
     def getIP(self):
     # fixed bug by explicit cast to int (ugly in my eyes)
-        return intToIp(int(self.ip_as_int))
+        #return intToIp(int(self.ip_as_int))
+        return intToIp(self.ip)
     
     def getPrettyShareSize(self):
         return makePretty(self.sharesize)
     
-    ip = property(getIP, setIP)
+    #ip = property(getIP, setIP)
     prettyShareSize = property(getPrettyShareSize)
