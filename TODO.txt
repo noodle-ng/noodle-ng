@@ -7,3 +7,4 @@ TODO
 - Migrate library code, while putting it all into noodle.lib
   - Some functions now defined in model should not be there
 - Split controller (at least to SearchController and RootController) and migrate it
+- WRITE DOCUMENTATION ABOUT EVERY SINGLE STEP
