@@ -74,7 +74,7 @@ def crawl(url):
     
     u = urlsplit(url)
     type = u.scheme
-    host,ip = getHostAndAddr(u.hostname)
+    host, ip = getHostAndAddr(u.hostname)
     if not hasService(ip, type):
         logging.debug("No %s share on %s" % (type, host))
         return
@@ -92,6 +92,15 @@ def crawl(url):
         # for dir in url:
         #     dbdir = query(share).filter(parent = parent)
         #    merge dbdir, dir
+        # def merge(dbdir,dir):
+        #    for entry in dir:
+        #        if entry in dbdir:
+        #            we already have that,
+        #            check for changes
+        #        else:
+        #            we dont have that, create it
+        #        if entry is_instance(folder):
+        #            recurse.
     except Exception,e:
         logging.warning(e)
     
