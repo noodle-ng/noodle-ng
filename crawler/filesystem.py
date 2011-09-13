@@ -51,4 +51,20 @@ def open(path):
     """
     pass
 
+def listdir(path):
+    """Get directory contents
+    
+    Return a list containing the names of the entries in the directory 
+    given by path. The list is in arbitrary order. It does not include 
+    the special entries '.' and '..' even if they are present in the 
+    directory.
+    """
+    pass
 
+def isdir(path):
+    """Test if path is a directory"""
+    pass
+
+def isfile(path):
+    """Test if path is a file"""
+    pass

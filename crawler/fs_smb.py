@@ -94,3 +94,27 @@ def open(path):
     """
     
     return c.open(path)
+
+def listdir(top):
+    """Get directory contents
+    
+    Return a list containing the names of the entries in the directory 
+    given by path. The list is in arbitrary order. It does not include 
+    the special entries '.' and '..' even if they are present in the 
+    directory.
+    """
+    entries = []
+    
+    dir = c.opendir(top)
+    for entry in dir.getdents():
+        if not (entry.name == "." or entry.name ==".."):
+            entries.append(entry.name)
+    return entries
+
+def isdir(path):
+    """Test if path is a directory"""
+    pass
+
+def isfile(path):
+    """Test if path is a file"""
+    pass

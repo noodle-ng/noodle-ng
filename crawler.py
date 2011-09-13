@@ -12,9 +12,9 @@ import sys, os, socket as sk
 import logging
 import multiprocessing
 from ConfigParser import SafeConfigParser
-from urlparse import urlsplit, urlunsplit
+from datetime import datetime
 
-from noodle.lib.utils import ipToInt, intToIp, hasService, getHostAndAddr
+from noodle.lib.utils import ipToInt, intToIp, hasService, getHostAndAddr, urlSplit, urlUnsplit
 from noodle.lib.iptools import IpRange, IpRangeList
 
 import transaction
@@ -68,25 +68,34 @@ def setup_worker():
     #model.metadata.create_all(engine)
     return
 
-def crawl(url):
+def crawl(host,type,credentials=None):
     """Starts the crawling process for one host"""
-    logging.debug("Crawling host %s" % url)
+    logging.debug("Crawling host %s" % host)
     
-    u = urlsplit(url)
-    type = u.scheme
-    host, ip = getHostAndAddr(u.hostname)
+    #u = urlsplit(url)
+    
+    hostname, ip = getHostAndAddr(host)
     if not hasService(ip, type):
-        logging.debug("No %s share on %s" % (type, host))
+        logging.debug("No %s share on %s" % (type, hostname))
         return
     
     session = model.DBSession()
     logging.debug(ipToInt(ip))
     try:
-        host = session.query(Host).filter(Host.ip == ipToInt(ip)).first() or Host(ip, unicode(host))
-        print host.ip
+        # Find host or create a new one
+        host = session.query(Host).filter(Host.ip == ipToInt(ip)).first() or Host(ip, unicode(hostname))
+        logging.debug("On host %s" % intToIp(host.ip))
         session.merge(host)
-        session.flush()
-        transaction.commit()
+        host.name = unicode(hostname)
+        host.last_crawled = datetime.now()
+        logging.debug("new: %s, dirty: %s" % (session.new, session.dirty))
+        #session.flush()
+        #logging.debug("new: %s, dirty: %s" % (session.new, session.dirty))
+        #transaction.commit()
+        
+        logging.debug(host.services)
+        for service in host.services:
+            pass
         # find service with correct type
         # parent = host
         # for dir in url:
@@ -101,14 +110,17 @@ def crawl(url):
         #            we dont have that, create it
         #        if entry is_instance(folder):
         #            recurse.
+        logging.debug("new: %s, dirty: %s" % (session.new, session.dirty))
+        transaction.commit()
     except Exception,e:
         logging.warning(e)
+        transaction.doom()
     
     return
 
 def main():
     """Runs the crawler"""
-    
+    global debug
     logging.info("Supported filesystems: %s" % fs)
     
     locations = []
@@ -117,7 +129,7 @@ def main():
         debug = True
         # Parsing location configuration from argv
         for i in range(1, len(sys.argv)):
-            url = urlsplit(sys.argv[i])
+            url = urlSplit(sys.argv[i])
             location = {'name': "arg%d" % i, 'type': url.scheme, 
                         'hosts': [IpRange(sk.gethostbyname(url.hostname))], 
                         'credentials': [(url.username,url.password)]}
@@ -155,13 +167,9 @@ def main():
         # Get minimum that we don't have to have more workers than jobs
         pool = multiprocessing.Pool(min(processes,len(location['hosts'])*len(location['credentials'])), setup_worker)
         
-        for credential in location['credentials']:
-            if credential[0] == "anonymous":
-                urls = [urlunsplit((location['type'], host, "", "", "")) for host in location['hosts']]
-            else:
-                urls = [urlunsplit((location['type'], "%s:%s@" % credential + host, "", "", "")) for host in location['hosts']]
-            pool.map_async(crawl, urls)
-            
+        for host in location['hosts']:
+            pool.apply_async(crawl, (host, location['type'], location['credentials']))
+        
         pool.close()
         pool.join()
     

@@ -65,7 +65,7 @@ def stat(top):
     
     return host.stat(path)
 
-def fopen(top):
+def open(top):
     """Open file.
     
     Returns file handle specified by path
@@ -75,3 +75,27 @@ def fopen(top):
     host = FTPHost(hostname,user,password)
     
     return host.open(path)
+
+def listdir(top):
+    """Get directory contents
+    
+    Return a list containing the names of the entries in the directory 
+    given by path. The list is in arbitrary order. It does not include 
+    the special entries '.' and '..' even if they are present in the 
+    directory.
+    """
+    (hostname,path,user,password) = parseuri(top)
+    host = FTPHost(hostname,user,password)
+    return host.listdir(path)
+
+def isdir(path):
+    """Test if path is a directory"""
+    (hostname,path,user,password) = parseuri(path)
+    host = FTPHost(hostname,user,password)
+    return host.path.isdir(path)
+
+def isfile(path):
+    """Test if path is a file"""
+    (hostname,path,user,password) = parseuri(path)
+    host = FTPHost(hostname,user,password)
+    return host.path.isfile(path)

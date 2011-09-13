@@ -6,7 +6,7 @@ from datetime import datetime
 from sqlalchemy import *
 from sqlalchemy.orm import mapper, relation, backref
 from sqlalchemy import Table, ForeignKey, Column
-from sqlalchemy.types import Integer, Unicode, BigInteger, DateTime, Float, Numeric
+from sqlalchemy.types import Integer, Unicode, BigInteger, DateTime#, Float, Numeric
 
 from noodle.model import DeclarativeBase, metadata, DBSession
 
@@ -121,7 +121,7 @@ class Folderish(Share):
     mediaType = property(getMediaType)
 
 class Content(Share):
-    size = Column(Numeric(precision=32, scale=0, asdecimal=True))
+    size = Column(BigInteger)
     #host = relation("host")
     __mapper_args__ = {'polymorphic_identity': u'content'}
 
@@ -166,6 +166,11 @@ class ServiceSMB(Service):
 class ServiceFTP(Service):
     __mapper_args__ = {'polymorphic_identity': u'serviceFTP'}
 
+#class ShareSMB(Folderish):
+#    username = Column(Unicode(256))
+#    password = Column(Unicode(256))
+#    __mapper_args__ = {'polymorphic_identity': u'shareSMB'}
+
 class Statistic(DeclarativeBase):
     __tablename__ = 'statistic'
     id = Column(Integer, primary_key=True)
@@ -194,7 +199,7 @@ class Host(DeclarativeBase):
     statistics = relation(Statistic, primaryjoin=id == Statistic.host_id, backref="host")
     last_crawled = Column(DateTime)
     crawl_time_in_s = Column(Integer)
-    sharesize = Column(Numeric(precision=32, scale=0, asdecimal=True))
+    sharesize = Column(BigInteger)
     
     def __init__(self,ip,name=None):
         self.ip = ipToInt(ip)

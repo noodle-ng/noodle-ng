@@ -6,6 +6,11 @@ from noodle.lib.iptools import ip2long , long2ip
 # sockets for cross platform network methods
 import socket as sk  
 
+from urlparse import urlsplit, urlunsplit
+from collections import namedtuple
+
+port = {'smb': 445, 'ftp': 21}
+
 #####################################################
 # iptools wrapper (it makes sense to define a central
 # place where the mapping is done, believe me!)
@@ -32,17 +37,13 @@ def hasService(host, service, timeout=1):
     """checks if the given host is online and the port
     corresponding to service is open"""
     
-    if service == "ftp":
-        port = 21
-    elif service == "smb":
-        port = 445
-    else:
+    if not port[service]:
         return False
     
     sd = sk.socket(sk.AF_INET, sk.SOCK_STREAM)
     sd.settimeout(timeout)
     try:
-        sd.connect((host, port))
+        sd.connect((host, port[service]))
         sd.close()
         return True
     except:
@@ -116,3 +117,17 @@ def splitFileName(s):
         ext = ret[1]
     
     return (name, ext)
+
+def urlUnsplit(type,host,path,username=None,password=None):
+    """urlUnsplit(*urlSplit("smb://hans@wurst/bude"))"""
+    if username:
+        if password:
+            username = username + ":" + password
+        host = username + "@" + host
+    return urlunsplit((type,host,path,"",""))
+
+def urlSplit(url):
+    """urlUnsplit(*urlSplit("smb://hans@wurst/bude"))"""
+    UrlSplit = namedtuple("UrlSplit", ['scheme', 'hostname', 'path', 'username', 'password'])
+    u = urlsplit(url)
+    return UrlSplit(u.scheme,u.hostname,u.path,u.username,u.password)

@@ -50,9 +50,27 @@ def stat(path):
     """
     return os.stat(path)
 
-def fopen(path):
+def open(path):
     """Open file.
     
     Returns file handle specified by path
     """
-    return open(path)
+    return os.open(path)
+
+def listdir(path):
+    """Get directory contents
+    
+    Return a list containing the names of the entries in the directory 
+    given by path. The list is in arbitrary order. It does not include 
+    the special entries '.' and '..' even if they are present in the 
+    directory.
+    """
+    return os.listdir(path)
+
+def isdir(path):
+    """Test if path is a directory"""
+    return os.path.isdir(path)
+
+def isfile(path):
+    """Test if path is a file"""
+    return os.path.isfile(path)
