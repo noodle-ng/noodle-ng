@@ -9,12 +9,14 @@ Frontend:
 Layout:
 =================================================================================
 - Evtl. ein Magic Word um die Suche auf zuletzt sichtbare Hosts einzugrenzen (z.B. lastseen:36h)
-- Die Seitenumbruchberechnung (offset / length) liefert manchmal eine Seite zu viel (letzte Seite der Ergebnisse ist einfach leer)
+- Die Seitenumbruchberechnung (offset / length) liefert manchmal eine Seite zu viel (letzte Seite 
+  der Ergebnisse ist einfach leer)
 - Browsen eines Hosts über den Hostinfo Bereich ermöglichen (über JSON AJAX)
 
 Statistik-Daemon:
 =================================================================================
-- Berechnung eines Scores der in der Host-Tabelle gespeichert wird und eine Zahl zwischen 0 und 1 annehmen kann. 
+- Berechnung eines Scores der in der Host-Tabelle gespeichert wird und eine Zahl zwischen 0 und 1
+  annehmen kann. 
   Der Score soll ein Maß der Erreichbarkeit eines Hosts sein, wobei 0 der schlechteste Wert ist.
 
 Proxy Downloader:
@@ -25,3 +27,16 @@ http://stackoverflow.com/questions/2413707/stream-a-file-to-the-http-response-in
 http://pythonpaste.org/webob/file-example.html
 http://pythonpaste.org/modules/fileapp.html
 http://stackoverflow.com/questions/2796352/serving-files-with-turbogears2
+
+
+Performace Tweaks:
+==================
+- Die Dateiendungen immer als lowercase speichern um ein like zu vermeiden
+- Die aktuelle Volltextsuche ist überaus langsam, da die gängigen SQL Datenbanken jeweils einen
+  eigenen Mechanismus implementieren, welchen wir nicht ohne weiteres nutzen können. Deshalb
+  verwenden wir momentan ein like "%str%" Konstrukt, welches mit jeder! Zeile der Tabelle verglichen
+  wird. Alternativ sollten wir die Match Anweisung implementieren, was aber nicht bei allen Daten-
+  banken geht, oder einen eigenen Index für Volltextsuchen benutzen. Dafür könnte man z.B. WHOOSH
+  verwenden: https://bitbucket.org/mchaput/whoosh/wiki/Home
+- Bei der Suche sollte ein mehrstufiger Ablauf angestrebt werden, wobei die einzelnen Subqueries
+  nach Aufwand (=Rechenzeit) sortiert werden und die billigen als erstes ausgeführt werden.
