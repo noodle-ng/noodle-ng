@@ -69,8 +69,9 @@ for sectionName in config.sections():
                     sys.exit(1)
                 section["range"].append(iptools.IpRangeList( (range_start, range_stop) ))
             else:
-                # its a single ip adress or CDIR
-                section["range"].append(iptools.IpRangeList(singlerange))
+                if singlerange != "":
+                    # its a single ip adress or CDIR
+                    section["range"].append(iptools.IpRangeList(singlerange))
         if config.has_option(sectionName, "credentials"):
             section_credentials = eval(config.get(sectionName, 'credentials'))
             if not isinstance(section_credentials, tuple):
