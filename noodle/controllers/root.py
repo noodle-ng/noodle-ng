@@ -25,9 +25,9 @@ from sqlalchemy import or_, and_
 import subprocess
 import shlex
 
+from pylons.controllers.util import forward
 try:
     import noodle.lib.smbfileapp as smbfileapp
-    from tg import use_wsgi_app
     proxyDl = True
 except:
     proxyDl = False
@@ -264,7 +264,7 @@ class RootController(BaseController):
             
             #imports moved to the top
             f = smbfileapp.FileApp(uri)
-            return use_wsgi_app(f)
+            return forward(f)
         else: #proxyDl not enabled
             return "<p><strong>proxyDownloader is (currently) not available on this system!</strong><br /><em>Sorry.</em></p>\n"
     
