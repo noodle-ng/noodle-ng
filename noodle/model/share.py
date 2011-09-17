@@ -8,6 +8,7 @@ from sqlalchemy.orm import mapper, relation, backref
 from sqlalchemy import Table, ForeignKey, Column
 from sqlalchemy.types import Integer, Unicode, BigInteger, DateTime#, Float, Numeric
 
+import noodle.model
 from noodle.model import DeclarativeBase, metadata, DBSession
 
 from noodle.lib.utils import ipToInt, intToIp 
@@ -36,7 +37,7 @@ class Share(DeclarativeBase):
     __tablename__ = 'shares'
     id = Column(Integer, primary_key=True)
     parent_id = Column(Integer, ForeignKey('shares.id'))
-    host_id = Column(Integer, ForeignKey('hosts.id'), nullable=False)
+    host_id = Column(Integer, ForeignKey('hosts.id'))
     # the filename without extension if the item has one
     name = Column(Unicode(256))
     type = Column(Unicode(20), nullable=False)
@@ -166,6 +167,8 @@ class ServiceSMB(Service):
 class ServiceFTP(Service):
     __mapper_args__ = {'polymorphic_identity': u'serviceFTP'}
 
+service_types = {"smb": ServiceSMB, "ftp": ServiceFTP}
+
 #class ShareSMB(Folderish):
 #    username = Column(Unicode(256))
 #    password = Column(Unicode(256))
@@ -195,7 +198,7 @@ class Host(DeclarativeBase):
     #ip_as_int = Column("ip", Numeric(precision=10, scale=0, asdecimal=True), nullable=False)
     ip = Column(BigInteger, nullable=False)
     name = Column(Unicode(256))
-    services = relation(Share, primaryjoin=and_(id == Share.host_id, Share.parent_id == None), backref="host")
+    services = relation(Service, primaryjoin=and_(id == Share.host_id, Share.parent_id == None), backref="host")
     statistics = relation(Statistic, primaryjoin=id == Statistic.host_id, backref="host")
     last_crawled = Column(DateTime)
     crawl_time_in_s = Column(Integer)
@@ -205,6 +208,18 @@ class Host(DeclarativeBase):
         self.ip = ipToInt(ip)
         if name:
             self.name = name
+    
+    def getService(self, type, credentials=None):
+        for service in self.services:
+            if isinstance(service, service_types[type]):
+                if (service.username, service.password) == credentials:
+                    return service
+        service = service_types[type]()
+        if credentials:
+            service.username = credentials[0]
+            service.password = credentials[1]
+        self.services.append(service)
+        return service
     
     def setIP(self, ip):
         #self.ip_as_int = ipToInt(IP)

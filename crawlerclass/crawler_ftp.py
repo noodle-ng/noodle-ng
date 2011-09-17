@@ -19,8 +19,7 @@ class CrawlerFTP(Crawler):
         hostname, ip = getHostAndAddr(host)
         if not hasService(ip, type):
             raise Exception("No %s share on %s" % (type, hostname))
-        Crawler.__init__(self, session, hostname, ip)
-        self.credentials = credentials
+        Crawler.__init__(self, type, session, hostname, ip, credentials)
         self.host = FTPHost(ip, credentials[0] or "anonymous", credentials[1] or "")
     
     def onewalk(self,dir):

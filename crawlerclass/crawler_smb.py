@@ -20,33 +20,34 @@ class CrawlerSMB(Crawler):
         hostname, ip = getHostAndAddr(host)
         if not hasService(ip, type):
             raise Exception("No %s share on %s" % (type, hostname))
-        Crawler.__init__(self, session, hostname, ip)
-        self.credentials = credentials
+        Crawler.__init__(self, type, session, hostname, ip, credentials)
         self.c = smbc.Context()
     
     def uri(self,path):
-        return urlUnsplit(type, self.hostname, path,self.credentials[0] or None, self.credentials[1] or None)
+        return urlUnsplit(type, self.ip, path,self.credentials[0] or None, self.credentials[1] or None)
     
     def onewalk(self,dir):
         """Returns a tuple (dirs,files) for the given
         dir path"""
         dirnames = []
         filenames = []
-        
-        dir = self.c.opendir(self.uri(dir))
-        for entry in dir.getdents():
-            if entry.name == "." or entry.name =="..":
-                # Skipping . and ..
-                continue
-            elif entry.smbc_type == smbc_type['folder']:
-                # Folder
-                dirnames.append(entry.name)
-            elif entry.smbc_type == smbc_type['file']:
-                #File
-                filenames.append(entry.name)
-            else:
-                continue
-        
+        #print self.uri(dir)
+        try:
+            dir = self.c.opendir(self.uri(dir))
+            for entry in dir.getdents():
+                if entry.name == "." or entry.name =="..":
+                    # Skipping . and ..
+                    continue
+                elif entry.smbc_type == smbc_type['folder'] or entry.smbc_type == smbc_type['share']:
+                    # Folder
+                    dirnames.append(entry.name.decode())
+                elif entry.smbc_type == smbc_type['file']:
+                    #File
+                    filenames.append(entry.name.decode())
+                else:
+                    continue
+        except:
+            pass
         #print (dirnames, filenames)
         return (dirnames, filenames)
     
