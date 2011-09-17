@@ -67,7 +67,7 @@ for sectionName in config.sections():
                 except:
                     print "%s is not a valid range!" % singlerange
                     sys.exit(1)
-                section["range"].append(iptools.IpRangeList( (range_start, range_stop) ))
+                section["range"].append(iptools.IpRangeList( (range_start.strip(), range_stop.strip()) ))
             else:
                 # its a single ip adress or CDIR
                 section["range"].append(iptools.IpRangeList(singlerange))
