@@ -46,43 +46,44 @@ if __name__ == "__main__":
     session = model.DBSession()
     
     path = u"smb://Gast:123Dabei@dns320/public/eBooks"
-    u = urlSplit(path)
+    url = urlSplit(path)
     t1 = time.time()
     try:
-        crawlersmb = CrawlerSMB(session,u.hostname,(u.username,u.password))
-        print crawlersmb.onewalk(u.path)
-        (dirs,files) = crawlersmb.onewalk(u.path)
-        print crawlersmb.listdir(u.path)
-        print crawlersmb.isdir(u.path)
-        print crawlersmb.isfile(u.path)
-        print crawlersmb.stat(u.path+u"/OSP_wrobel_gentoo.pdf")
-        (n,d) = crawlersmb.run(u.path)
-        print "New: %d, Deleted: %d" % (n,d)
+        crawlersmb = CrawlerSMB(session,url.hostname,(url.username,url.password))
+        print crawlersmb.onewalk(url.path)
+        (dirs,files) = crawlersmb.onewalk(url.path)
+        print crawlersmb.listdir(url.path)
+        print crawlersmb.isdir(url.path)
+        print crawlersmb.isfile(url.path)
+        print crawlersmb.stat(url.path+u"/OSP_wrobel_gentoo.pdf")
+        (n,u,d) = crawlersmb.run(url.path)
+        print "Crawler statistics: New: %d, Updated: %d, Deleted: %d" % (n,u,d)
+        print "Session statistics: New: %d, Updated: %d, Deleted: %d" % (len(session.new), len(session.dirty), len(session.deleted))
         transaction.commit()
     except Exception, e:
-        print "Narf: %s" % e
         traceback.print_exc()
         transaction.doom()
     
     t2 = time.time()
     
     try:
-        raise Exception("No Ftp")
-        crawlerftp = CrawlerFTP(session,u.hostname,(u.username,u.password))
-        print crawlerftp.onewalk(u.path)
-        (dirs,files) = crawlerftp.onewalk(u.path)
-        print crawlerftp.listdir(u.path)
-        print crawlerftp.isdir(u.path)
-        print crawlerftp.isfile(u.path)
-        print crawlerftp.stat(u.path+u"/OSP_wrobel_gentoo.pdf")
-        crawlerftp.run(u.path)
+        crawlerftp = CrawlerFTP(session,url.hostname,(url.username,url.password))
+        print crawlerftp.onewalk(url.path)
+        (dirs,files) = crawlerftp.onewalk(url.path)
+        print crawlerftp.listdir(url.path)
+        print crawlerftp.isdir(url.path)
+        print crawlerftp.isfile(url.path)
+        print crawlerftp.stat(url.path+u"/OSP_wrobel_gentoo.pdf")
+        (n,u,d) = crawlerftp.run(url.path)
+        print "Crawler statistics: New: %d, Updated: %d, Deleted: %d" % (n,u,d)
+        print "Session statistics: New: %d, Updated: %d, Deleted: %d" % (len(session.new), len(session.dirty), len(session.deleted))
         transaction.commit()
     except Exception, e:
-        print "Narf: %s" % e
+        traceback.print_exc()
         transaction.doom()
     
     t3 = time.time()
     
-    print "SMB took %f" % (t2-t1)
-    print "FTP took %f" % (t3-t2)
+    print "SMB took %fs" % (t2-t1)
+    print "FTP took %fs" % (t3-t2)
     

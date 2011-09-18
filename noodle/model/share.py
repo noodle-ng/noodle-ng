@@ -4,14 +4,14 @@
 from datetime import datetime
 
 from sqlalchemy import *
-from sqlalchemy.orm import mapper, relation, backref
+from sqlalchemy.orm import mapper, relationship, backref
 from sqlalchemy import Table, ForeignKey, Column
 from sqlalchemy.types import Integer, Unicode, BigInteger, DateTime#, Float, Numeric
 
 import noodle.model
 from noodle.model import DeclarativeBase, metadata, DBSession
 
-from noodle.lib.utils import ipToInt, intToIp 
+#from noodle.lib.utils import ipToInt, intToIp 
 
 videoExt = [u"avi", u"mkv", u"mp4", u"mpv", u"mov", u"mpg", u"divx", u"vdr"]
 audioExt = [u"mp3", u"aac", u"ogg", u"m4a", u"wav"]
@@ -40,7 +40,6 @@ class Share(DeclarativeBase):
     host_id = Column(Integer, ForeignKey('hosts.id'))
     # the filename without extension if the item has one
     name = Column(Unicode(256))
-    type = Column(Unicode(20), nullable=False)
     # the creation date of the item which the hosts provides
     date = Column(DateTime)
     # the date the crawler first indexed the item
@@ -48,10 +47,11 @@ class Share(DeclarativeBase):
     # date the last time the item was updated by the crawler (i.e. size changed)
     last_update = Column(DateTime, nullable=False)
     #meta = relation("meta", uselist=False, backref="share")
+    type = Column(Unicode(20), nullable=False)
     __mapper_args__ = {'polymorphic_on': type}
     
     def __init__(self, first_seen=datetime.now(), last_update=datetime.now()):
-        ''' set the first_seen and last_update fields for convenience sake '''
+        ''' set the first_seen and last_update fields'''
         self.first_seen = first_seen
         self.last_update = last_update
     
@@ -112,9 +112,12 @@ class Share(DeclarativeBase):
 
 
 class Folderish(Share):
-    children = relation(Share, cascade="all", backref=backref('parent', remote_side="Share.id"))
+    children = relationship(Share, cascade="all", backref=backref('parent', remote_side="Share.id"))
     #children = relation("share", cascade="all, delete-orphan", backref=backref('parent', remote_side="share.id"))
     __mapper_args__ = {'polymorphic_identity': u'folderish'}
+    
+    def __init__(self,**kwargs):
+        Share.__init__(self, **kwargs)
     
     def getMediaType(self):
         return "folder"
@@ -148,6 +151,14 @@ class File(Content):
         Content.__init__(self, name)
         self.extension = ext
     
+    def update(self,date=None,size=None):
+        if date:
+            self.date = date
+        if size:
+            self.size = size
+        self.last_update = datetime.now()
+        return
+        
     def getPath(self):
         return self.parent.getPath()
     
@@ -162,6 +173,13 @@ class Service(Folderish):
     username = Column(Unicode(256))
     password = Column(Unicode(256))
     __mapper_args__ = {'polymorphic_identity': u'service'}
+    
+    def __init__(self, username=None, password=None, **kwargs):
+        Folderish.__init__(self, **kwargs)
+        if username:
+            self.username = username
+            if password:
+                self.password = password
     
     def getService(self):
         return self
@@ -178,19 +196,14 @@ class ServiceSMB(Service):
 class ServiceFTP(Service):
     __mapper_args__ = {'polymorphic_identity': u'serviceFTP'}
 
-service_types = {"smb": ServiceSMB, "ftp": ServiceFTP}
-
-#class ShareSMB(Folderish):
-#    username = Column(Unicode(256))
-#    password = Column(Unicode(256))
-#    __mapper_args__ = {'polymorphic_identity': u'shareSMB'}
+###############################################################################
 
 class Statistic(DeclarativeBase):
-    __tablename__ = 'statistic'
+    __tablename__ = 'statistics'
     id = Column(Integer, primary_key=True)
     host_id = Column(Integer, ForeignKey('hosts.id'), nullable=False)
-    type = Column(Unicode(20), nullable=False)
     date = Column(DateTime, nullable=False)
+    type = Column(Unicode(20), nullable=False)
     __mapper_args__ = {'polymorphic_on': type}
 
 class Ping(Statistic):
@@ -202,47 +215,29 @@ class Ping(Statistic):
         self.value = value
         self.date = date
 
+###############################################################################
+
 class Host(DeclarativeBase):
     __tablename__ = 'hosts'
     id = Column(Integer, primary_key=True)
-    # asdecimal=True may be dangerous when using iptools 
-    #ip_as_int = Column("ip", Numeric(precision=10, scale=0, asdecimal=True), nullable=False)
     ip = Column(BigInteger, nullable=False)
     name = Column(Unicode(256))
-    services = relation(Service, primaryjoin=and_(id == Share.host_id, Share.parent_id == None), backref="host")
-    statistics = relation(Statistic, primaryjoin=id == Statistic.host_id, backref="host")
-    last_crawled = Column(DateTime)
-    crawl_time_in_s = Column(Integer)
+    first_seen = Column(DateTime, nullable=False)
+    last_update = Column(DateTime, nullable=False)
+    crawl_time = Column(Integer)
     sharesize = Column(BigInteger)
+    services = relationship(Service, backref="host")
+    statistics = relationship(Statistic, backref="host")
     
-    def __init__(self,ip,name=None):
-        self.ip = ipToInt(ip)
+    def __init__(self, ip, name=None, first_seen=datetime.now(), last_update=datetime.now()):
+        self.ip = ip
         if name:
             self.name = name
+        self.first_seen = first_seen
+        self.last_update = last_update
     
-    def getService(self, type, credentials=None):
-        for service in self.services:
-            if isinstance(service, service_types[type]):
-                if (service.username, service.password) == credentials:
-                    return service
-        service = service_types[type]()
-        if credentials:
-            service.username = credentials[0]
-            service.password = credentials[1]
-        self.services.append(service)
-        return service
-    
-    def setIP(self, ip):
-        #self.ip_as_int = ipToInt(IP)
-        self.ip = ipToInt(ip)
-    
-    def getIP(self):
-    # fixed bug by explicit cast to int (ugly in my eyes)
-        #return intToIp(int(self.ip_as_int))
-        return intToIp(self.ip)
-    
+    #@property
     def getPrettyShareSize(self):
         return makePretty(self.sharesize)
     
-    #ip = property(getIP, setIP)
     prettyShareSize = property(getPrettyShareSize)

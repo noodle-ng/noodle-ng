@@ -6,6 +6,7 @@ Created on 05.09.2011
 
 import logging
 import smbc
+"""I advise you to use pysmbc==1.0.9, since other versions may not work reliable!"""
 
 from noodle.lib.utils import ipToInt, intToIp, hasService, getHostAndAddr, urlSplit, urlUnsplit
 
@@ -24,17 +25,15 @@ class CrawlerSMB(Crawler):
         self.c = smbc.Context()
     
     def uri(self,path):
-        return urlUnsplit(type, self.ip, path,self.credentials[0] or None, self.credentials[1] or None)
+        return urlUnsplit(type, self.ip, path, self.credentials[0] or None, self.credentials[1] or None)
     
     def onewalk(self,path):
-        """Returns a tuple (dirs,files) for the given
-        dir path"""
+        """Returns a tuple (dirs,files) for the given dir path"""
         dirnames = []
         filenames = []
-        #print self.uri(dir)
+        
         try:
-            dir = self.c.opendir(self.uri(path))
-            for entry in dir.getdents():
+            for entry in self.c.opendir(self.uri(path)).getdents():
                 if entry.name == "." or entry.name =="..":
                     # Skipping . and ..
                     continue
@@ -46,10 +45,8 @@ class CrawlerSMB(Crawler):
                     filenames.append(entry.name.decode())
                 else:
                     continue
-        except Exception,e:
-            logging.debug("Could not get directory entries in %s: \n%s" % (self.uri(path),e))
-            pass
-        #print (dirnames, filenames)
+        except Exception, e:
+            logging.debug("Could not get directory entries in %s: %s" % (self.uri(path), e))
         return (dirnames, filenames)
     
     def listdir(self,dir):
@@ -67,4 +64,8 @@ class CrawlerSMB(Crawler):
         return tail in filenames
     
     def stat(self,path):
-        return self.c.open(self.uri(path)).fstat()
+        try:
+            return self.c.open(self.uri(path)).fstat()
+        except Exception, e:
+            logging.debug("Could not get stat for %s: %s" % (self.uri(path), e))
+            return (0,0,0,0,0,0,0,0,0,0)

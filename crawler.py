@@ -24,6 +24,10 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 import noodle.model as model
 from noodle.model.share import Host
 
+from crawlerclass import CrawlerSMB, CrawlerFTP
+crawler_type = {"smb": CrawlerSMB, "ftp": CrawlerFTP}
+
+
 fs = {'smb': False, 'ftp': False}
 try:
     import crawler.fs_ftp as fs_ftp
@@ -81,40 +85,13 @@ def crawl(host,type,credentials=None):
     
     session = model.DBSession()
     logging.debug(ipToInt(ip))
-    try:
-        # Find host or create a new one
-        host = session.query(Host).filter(Host.ip == ipToInt(ip)).first() or Host(ip, unicode(hostname))
-        logging.debug("On host %s" % intToIp(host.ip))
-        session.merge(host)
-        host.name = unicode(hostname)
-        host.last_crawled = datetime.now()
-        logging.debug("new: %s, dirty: %s" % (session.new, session.dirty))
-        #session.flush()
-        #logging.debug("new: %s, dirty: %s" % (session.new, session.dirty))
-        #transaction.commit()
-        
-        logging.debug(host.services)
-        for service in host.services:
-            pass
-        # find service with correct type
-        # parent = host
-        # for dir in url:
-        #     dbdir = query(share).filter(parent = parent)
-        #    merge dbdir, dir
-        # def merge(dbdir,dir):
-        #    for entry in dir:
-        #        if entry in dbdir:
-        #            we already have that,
-        #            check for changes
-        #        else:
-        #            we dont have that, create it
-        #        if entry is_instance(folder):
-        #            recurse.
-        logging.debug("new: %s, dirty: %s" % (session.new, session.dirty))
-        transaction.commit()
-    except Exception,e:
-        logging.warning(e)
-        transaction.doom()
+
+    for credential in credentials:
+        try:
+            crawler = crawler_type[type](session, host, credential)
+            crawler.run()
+        except Exception, e:
+            logging.warn(e)
     
     return
 

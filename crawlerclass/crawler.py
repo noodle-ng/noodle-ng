@@ -4,7 +4,7 @@ Created on 05.09.2011
 @author: moschlar
 '''
 
-import logging, posixpath
+import logging, posixpath, time
 from datetime import datetime
 
 from noodle.lib.utils import ipToInt, intToIp, hasService, getHostAndAddr, urlSplit, urlUnsplit
@@ -14,7 +14,8 @@ import sqlalchemy
 from sqlalchemy.orm import sessionmaker, scoped_session
 
 import noodle.model as model
-from noodle.model.share import Host, Folder, File
+from noodle.model.share import Host, Folder, File, ServiceSMB, ServiceFTP
+service_type = {"smb": ServiceSMB, "ftp": ServiceFTP}
 
 class Crawler():
     
@@ -47,41 +48,61 @@ class Crawler():
                     files[child.name] = child
             else:
                 continue
-            
         return (folders, files)
     
     def run(self, host_dir="/"):
-        #print self.session.query(Host).filter(Host.ip == ipToInt(self.ip)).all()
-        host = self.session.query(Host).filter(Host.ip == ipToInt(self.ip)).first() or Host(self.ip, unicode(self.hostname))
+        starttime = time.time()
+        host = self.session.query(Host).filter(Host.ip == ipToInt(self.ip)).first() or Host(ipToInt(self.ip), unicode(self.hostname))
         self.session.add(host)
         host.name = unicode(self.hostname)
-        host.last_crawled = datetime.now()
-        print host.services
-        database_dir = host.getService(self.type, self.credentials)
+        
+        database_dir = None
+        # Try to get service of current type and current credentials
+        for service in host.services:
+            if isinstance(service, service_type[self.type]):
+                if (service.username, service.password) == self.credentials:
+                    database_dir = service
+        # If None exists, create one
+        if not database_dir:
+            database_dir = service_type[self.type](*self.credentials)
+            host.services.append(database_dir)
+        
         self.session.add(database_dir)
-        print database_dir
-        print database_dir.children
-        return self.walker(database_dir, host_dir)
+        
+        result = self.walker(database_dir, host_dir)
+        
+        endtime = time.time()
+        host.crawl_time = int(round(endtime - starttime))
+        
+        return result
     
     def walker(self, database_dir, host_dir):
         
-        logging.debug("Directory %s started" % host_dir)
+        logging.debug("Started crawling %s" % host_dir)
         
+        # Variables for tracking statistics
+        newsum = updsum = delsum = 0
+        
+        # Get lists for host and database
         host_folders, host_files = self.onewalk(host_dir)
         db_folders, db_files = self.dblist(database_dir)
         
-        logging.debug("host_list: %s %s" % (str(host_folders), str(host_files)))
-        logging.debug("database_list: %s %s" % (str(db_folders), str(db_files)))
+        #logging.debug("host_list: %s %s" % (str(host_folders), str(host_files)))
+        #logging.debug("database_list: %s %s" % (str(db_folders), str(db_files)))
         
+        # We use sets here because we can perform union, intersection and complement operations on them
         newFiles = set(f for f in host_files) - set(f for f in db_files)
         newFolders = set(f for f in host_folders) - set(f for f in db_folders)
+        
         updateFiles = set(f for f in host_files) & set(f for f in db_files)
         updateFolders = set(f for f in host_folders) & set(f for f in db_folders)
+        
         delFiles = set(f for f in db_files) - set(f for f in host_files)
         delFolders = set(f for f in db_folders) - set(f for f in db_folders)
         
         for newFile in newFiles:
             logging.debug("New: %s" % newFile)
+            newsum += 1
             name, ext = self.path_splitext(newFile)
             stat = self.stat(self.path_join(host_dir, newFile))
             file = File(name, ext)
@@ -99,16 +120,19 @@ class Crawler():
             file = db_files[updateFile]
             if file.size != stat[6] or file.date != datetime.fromtimestamp(stat[8]):
                 logging.debug("   Changed: %s" % updateFile)
+                updsum += 1
                 file.size = stat[6]
                 file.date = datetime.fromtimestamp(stat[8])
                 file.last_update = datetime.now()
         
         for delFile in delFiles:
             logging.debug("Delete: %s" % delFile)
+            delsum += 1
             del database_dir.children[database_dir.children.index(delFile)]
         
         for newFolder in newFolders:
             logging.debug("New: %s" % newFolder)
+            newsum += 1
             folder = Folder(newFolder)
             folder.last_update = datetime.now()
             database_dir.children.append(folder)
@@ -117,64 +141,21 @@ class Crawler():
         for updateFolder in updateFolders:
             logging.debug("Update: %s" % updateFolder)
             pass
+            # Not sure what to do here, since we mostly can't get stats from a directory
             folder = db_folders[updateFolder]
             folder.last_update = datetime.now()
         
         for delFolder in delFolders:
             logging.debug("Delete: %s" % delFolder)
+            delsum += 1
             del database_dir.children[database_dir.children.index(delFolder)]
         
-        newsum=0
-        delsum=0
-        
         for folder in db_folders.itervalues():
-            new,deleted = self.walker(folder,self.path_join(host_dir, folder.name))
-            newsum+=new
-            delsum+=deleted
+            new, updated, deleted = self.walker(folder,self.path_join(host_dir, folder.name))
+            newsum += new
+            updsum += updated
+            delsum += deleted
         
         logging.debug("Directory %s finished" % host_dir)
-        #return (len(newFiles),len(newFolders),len(updateFiles), len(updateFolders), len(delFiles), len(delFolders))
-        return (len(newFiles)+len(newFolders)+newsum,len(delFiles)+len(delFolders)+delsum)
         
-        for file in host_files:
-            hf = set(f for f in host_files)
-            df = set(f for f in db_files)
-            logging.info("new: %s, update: %s, delete: %s" % (hf-df, hf&df, df-hf))
-            stat = self.stat(self.path_join(host_dir, file))
-            if file in db_files:
-                # File already crawled
-                logging.debug("File already crawled: %s" % file)
-                if db_files[file].size != stat[6] or db_files[file].date != datetime.fromtimestamp(stat[8]):
-                    # Stats have changed
-                    logging.debug("File changed: %s" % file)
-                    db_files[file].size = stat[6]
-                    db_files[file].date = datetime.fromtimestamp(stat[8])
-                    db_files[file].last_update = datetime.now()
-            else:
-                # New file
-                logging.debug("New file: %s" % file)
-                myFile = File()
-                name, extension = self.path_splitext(file)
-                myFile.name = name
-                myFile.extension = extension
-                myFile.size = stat[6]
-                myFile.date = datetime.fromtimestamp(stat[8])
-                myFile.last_update = datetime.now()
-                database_dir.children.append(myFile)
-        
-        for folder in host_folders:
-            if folder in db_folders:
-                # Folder already crawled
-                logging.debug("Folder already crawled: %s" % folder)
-                self.walker(db_folders[folder], self.path_join(host_dir, folder))
-            else:
-                # New Folder
-                logging.debug("New folder: %s" % folder)
-                myFolder = Folder()
-                myFolder.name = folder
-                myFolder.last_update = datetime.now()
-                database_dir.children.append(myFolder)
-                self.walker(myFolder, self.path_join(host_dir, folder))
-            
-        logging.debug("Directory %s finished" % host_dir)
-    
+        return (newsum, updsum, delsum)
