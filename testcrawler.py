@@ -56,7 +56,8 @@ if __name__ == "__main__":
         print crawlersmb.isdir(u.path)
         print crawlersmb.isfile(u.path)
         print crawlersmb.stat(u.path+u"/OSP_wrobel_gentoo.pdf")
-        crawlersmb.run()
+        (n,d) = crawlersmb.run(u.path)
+        print "New: %d, Deleted: %d" % (n,d)
         transaction.commit()
     except Exception, e:
         print "Narf: %s" % e
@@ -74,7 +75,7 @@ if __name__ == "__main__":
         print crawlerftp.isdir(u.path)
         print crawlerftp.isfile(u.path)
         print crawlerftp.stat(u.path+u"/OSP_wrobel_gentoo.pdf")
-        crawlerftp.run()
+        crawlerftp.run(u.path)
         transaction.commit()
     except Exception, e:
         print "Narf: %s" % e

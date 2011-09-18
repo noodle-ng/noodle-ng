@@ -42,7 +42,7 @@ class Crawler():
                 folders[child.name] = child
             elif isinstance(child, File):
                 if child.extension:
-                    files[child.name+"."+child.extension] = child
+                    files[child.name + child.extension] = child
                 else:
                     files[child.name] = child
             else:
@@ -50,7 +50,7 @@ class Crawler():
             
         return (folders, files)
     
-    def run(self):
+    def run(self, host_dir="/"):
         #print self.session.query(Host).filter(Host.ip == ipToInt(self.ip)).all()
         host = self.session.query(Host).filter(Host.ip == ipToInt(self.ip)).first() or Host(self.ip, unicode(self.hostname))
         self.session.add(host)
@@ -61,31 +61,98 @@ class Crawler():
         self.session.add(database_dir)
         print database_dir
         print database_dir.children
-        host_dir = "/public/eBooks"
-        self.walker(database_dir, host_dir)
+        return self.walker(database_dir, host_dir)
     
     def walker(self, database_dir, host_dir):
         
-        host_list = self.onewalk(host_dir)
-        database_list = self.dblist(database_dir)
+        logging.debug("Directory %s started" % host_dir)
         
-        print "host_list: %s" % str(host_list)
-        print "database_list: %s" % str(database_list)
+        host_folders, host_files = self.onewalk(host_dir)
+        db_folders, db_files = self.dblist(database_dir)
         
-        for file in host_list[1]:
-            stat = self.stat(self.path_join(host_dir,file))
-            if file in database_list[1]:
+        logging.debug("host_list: %s %s" % (str(host_folders), str(host_files)))
+        logging.debug("database_list: %s %s" % (str(db_folders), str(db_files)))
+        
+        newFiles = set(f for f in host_files) - set(f for f in db_files)
+        newFolders = set(f for f in host_folders) - set(f for f in db_folders)
+        updateFiles = set(f for f in host_files) & set(f for f in db_files)
+        updateFolders = set(f for f in host_folders) & set(f for f in db_folders)
+        delFiles = set(f for f in db_files) - set(f for f in host_files)
+        delFolders = set(f for f in db_folders) - set(f for f in db_folders)
+        
+        for newFile in newFiles:
+            logging.debug("New: %s" % newFile)
+            name, ext = self.path_splitext(newFile)
+            stat = self.stat(self.path_join(host_dir, newFile))
+            file = File(name, ext)
+            file.name = name
+            file.extension = ext
+            file.size = stat[6]
+            file.date = datetime.fromtimestamp(stat[8])
+            file.last_update = datetime.now()
+            database_dir.children.append(file)
+        
+        for updateFile in updateFiles:
+            logging.debug("Update: %s" % updateFile)
+            #name, ext = self.path_splitext(updateFile)
+            stat = self.stat(self.path_join(host_dir, updateFile))
+            file = db_files[updateFile]
+            if file.size != stat[6] or file.date != datetime.fromtimestamp(stat[8]):
+                logging.debug("   Changed: %s" % updateFile)
+                file.size = stat[6]
+                file.date = datetime.fromtimestamp(stat[8])
+                file.last_update = datetime.now()
+        
+        for delFile in delFiles:
+            logging.debug("Delete: %s" % delFile)
+            del database_dir.children[database_dir.children.index(delFile)]
+        
+        for newFolder in newFolders:
+            logging.debug("New: %s" % newFolder)
+            folder = Folder(newFolder)
+            folder.last_update = datetime.now()
+            database_dir.children.append(folder)
+            db_folders[newFolder] = folder
+        
+        for updateFolder in updateFolders:
+            logging.debug("Update: %s" % updateFolder)
+            pass
+            folder = db_folders[updateFolder]
+            folder.last_update = datetime.now()
+        
+        for delFolder in delFolders:
+            logging.debug("Delete: %s" % delFolder)
+            del database_dir.children[database_dir.children.index(delFolder)]
+        
+        newsum=0
+        delsum=0
+        
+        for folder in db_folders.itervalues():
+            new,deleted = self.walker(folder,self.path_join(host_dir, folder.name))
+            newsum+=new
+            delsum+=deleted
+        
+        logging.debug("Directory %s finished" % host_dir)
+        #return (len(newFiles),len(newFolders),len(updateFiles), len(updateFolders), len(delFiles), len(delFolders))
+        return (len(newFiles)+len(newFolders),len(delFiles)+len(delFolders))
+        
+        for file in host_files:
+            hf = set(f for f in host_files)
+            df = set(f for f in db_files)
+            logging.info("new: %s, update: %s, delete: %s" % (hf-df, hf&df, df-hf))
+            stat = self.stat(self.path_join(host_dir, file))
+            if file in db_files:
                 # File already crawled
-                print file + " already crawled"
-                if database_list[1][file].size != stat[6] or database_list[file].date != datetime.fromtimestamp(stat[8]):
+                logging.debug("File already crawled: %s" % file)
+                if db_files[file].size != stat[6] or db_files[file].date != datetime.fromtimestamp(stat[8]):
                     # Stats have changed
-                    print file + "changed"
-                    database_list[1][file].size = stat[6]
-                    database_list[1][file].date = datetime.fromtimestamp(stat[8])
-                    database_list[1][file].last_update = datetime.now()
+                    logging.debug("File changed: %s" % file)
+                    db_files[file].size = stat[6]
+                    db_files[file].date = datetime.fromtimestamp(stat[8])
+                    db_files[file].last_update = datetime.now()
             else:
                 # New file
-                print file + "new"
+                logging.debug("New file: %s" % file)
                 myFile = File()
                 name, extension = self.path_splitext(file)
                 myFile.name = name
@@ -95,11 +162,11 @@ class Crawler():
                 myFile.last_update = datetime.now()
                 database_dir.children.append(myFile)
         
-        for folder in host_list[0]:
-            if folder in database_list[0]:
+        for folder in host_folders:
+            if folder in db_folders:
                 # Folder already crawled
-                print folder + "already crawled"
-                self.walker(database_list[0][folder], self.path_join(host_dir, folder))
+                logging.debug("Folder already crawled: %s" % folder)
+                self.walker(db_folders[folder], self.path_join(host_dir, folder))
             else:
                 # New Folder
                 logging.debug("New folder: %s" % folder)
@@ -109,5 +176,5 @@ class Crawler():
                 database_dir.children.append(myFolder)
                 self.walker(myFolder, self.path_join(host_dir, folder))
             
-        print "finished"
+        logging.debug("Directory %s finished" % host_dir)
     

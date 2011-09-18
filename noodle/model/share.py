@@ -125,9 +125,16 @@ class Content(Share):
     size = Column(BigInteger)
     #host = relation("host")
     __mapper_args__ = {'polymorphic_identity': u'content'}
+    
+    def __init__(self, name, **kwargs):
+        Share.__init__(self, **kwargs)
+        self.name = name
 
 class Folder(Folderish, Content):
     __mapper_args__ = {'polymorphic_identity': u'folder'}
+    
+    def __init__(self, name, **kwargs):
+        Content.__init__(self, name)
 
 class File(Content):
     # file extension, if there is one
@@ -136,6 +143,10 @@ class File(Content):
     # to introduce load balancing to proxyDownloader
     hash = Column(Unicode(256))
     __mapper_args__ = {'polymorphic_identity': u'file'}
+    
+    def __init__(self, name, ext, **kwargs):
+        Content.__init__(self, name)
+        self.extension = ext
     
     def getPath(self):
         return self.parent.getPath()
