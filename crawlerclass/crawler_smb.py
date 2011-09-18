@@ -26,14 +26,14 @@ class CrawlerSMB(Crawler):
     def uri(self,path):
         return urlUnsplit(type, self.ip, path,self.credentials[0] or None, self.credentials[1] or None)
     
-    def onewalk(self,dir):
+    def onewalk(self,path):
         """Returns a tuple (dirs,files) for the given
         dir path"""
         dirnames = []
         filenames = []
         #print self.uri(dir)
         try:
-            dir = self.c.opendir(self.uri(dir))
+            dir = self.c.opendir(self.uri(path))
             for entry in dir.getdents():
                 if entry.name == "." or entry.name =="..":
                     # Skipping . and ..
@@ -46,7 +46,8 @@ class CrawlerSMB(Crawler):
                     filenames.append(entry.name.decode())
                 else:
                     continue
-        except:
+        except Exception,e:
+            logging.debug("Could not get directory entries in %s: \n%s" % (self.uri(path),e))
             pass
         #print (dirnames, filenames)
         return (dirnames, filenames)

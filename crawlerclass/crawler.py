@@ -134,7 +134,7 @@ class Crawler():
         
         logging.debug("Directory %s finished" % host_dir)
         #return (len(newFiles),len(newFolders),len(updateFiles), len(updateFolders), len(delFiles), len(delFolders))
-        return (len(newFiles)+len(newFolders),len(delFiles)+len(delFolders))
+        return (len(newFiles)+len(newFolders)+newsum,len(delFiles)+len(delFolders)+delsum)
         
         for file in host_files:
             hf = set(f for f in host_files)

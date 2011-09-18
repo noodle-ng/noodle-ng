@@ -67,7 +67,7 @@ if __name__ == "__main__":
     t2 = time.time()
     
     try:
-        raise
+        raise Exception("No Ftp")
         crawlerftp = CrawlerFTP(session,u.hostname,(u.username,u.password))
         print crawlerftp.onewalk(u.path)
         (dirs,files) = crawlerftp.onewalk(u.path)
