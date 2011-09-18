@@ -38,7 +38,7 @@ class share(DeclarativeBase):
     __tablename__ = 'shares'
     id = Column(Integer, primary_key=True)
     parent_id = Column(Integer, ForeignKey('shares.id'))
-    host_id = Column(Integer, ForeignKey('hosts.id'), nullable=False)
+    host_id = Column(Integer, ForeignKey('hosts.id'))
     # the filename without extension if the item has one
     name = Column(Unicode(256))
     type = Column(Unicode(20), nullable=False)
