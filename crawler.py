@@ -66,32 +66,28 @@ def setup_worker():
     """Sets up a worker process"""
     logging.debug("Setting up worker %s" % multiprocessing.current_process().name)
     engine = sqlalchemy.create_engine(sqlalchemy_url, echo=sqlalchemy_echo)
-    #model.maker = sessionmaker(autoflush=False, autocommit=False, extension=model.MySessionExtension())
-    #model.DBSession = scoped_session(model.maker)
     model.init_model(engine)
     #model.metadata.create_all(engine)
     return
 
-def crawl(host,type,credentials=None):
+def crawl(host, type, credentials=None, initializer=None):
     """Starts the crawling process for one host"""
-    logging.debug("Crawling host %s" % host)
-    
-    #u = urlsplit(url)
+    if initializer:
+        initializer()
     
     hostname, ip = getHostAndAddr(host)
-    if not hasService(ip, type):
-        logging.debug("No %s share on %s" % (type, hostname))
-        return
+    
+    logging.debug("Crawling host %s (%s)" % (hostname, ip))
     
     session = model.DBSession()
-    logging.debug(ipToInt(ip))
-
-    for credential in credentials:
+    
+    for (username, password) in credentials:
         try:
-            crawler = crawler_type[type](session, host, credential)
+            crawler = crawler_type[type](session, host, unicode(username), unicode(password))
             crawler.run()
         except Exception, e:
             logging.warn(e)
+            raise
     
     return
 
@@ -108,8 +104,8 @@ def main():
         for i in range(1, len(sys.argv)):
             url = urlSplit(sys.argv[i])
             location = {'name': "arg%d" % i, 'type': url.scheme, 
-                        'hosts': [IpRange(sk.gethostbyname(url.hostname))], 
-                        'credentials': [(url.username,url.password)]}
+                        'hosts': [url.hostname], 
+                        'credentials': [(url.username, url.password)]}
             locations.append(location)
     else:
         # Parsing location configuration from config file
@@ -133,22 +129,29 @@ def main():
                     hosts.append(element)
             location['hosts'] = IpRangeList(*hosts)
             location['credentials'] = []
+            if config.has_option(name, 'anonymous'):
+                if config.getboolean(name, 'anonymous'):
+                    location['credentials'].append((None, None))
             for cred in config.get(name, 'credentials').split(','):
-                location['credentials'].append(tuple(cred.strip().split(':')))
+                location['credentials'].append(tuple(cred.strip().split(':', 1)))
             locations.append(location)
     
     logging.debug(locations)
     
     for location in locations:
         logging.debug("Crawling location %s" % location['name'])
-        # Get minimum that we don't have to have more workers than jobs
-        pool = multiprocessing.Pool(min(processes,len(location['hosts'])*len(location['credentials'])), setup_worker)
-        
-        for host in location['hosts']:
-            pool.apply_async(crawl, (host, location['type'], location['credentials']))
-        
-        pool.close()
-        pool.join()
+        if debug:
+            for host in location['hosts']:
+                crawl(host, location['type'], location['credentials'], setup_worker)
+        else:
+            # Get minimum that we don't have to have more workers than jobs
+            pool = multiprocessing.Pool(min(processes,len(location['hosts'])*len(location['credentials'])), setup_worker)
+            
+            for host in location['hosts']:
+                pool.apply_async(crawl, (host, location['type'], location['credentials']))
+            
+            pool.close()
+            pool.join()
     
     return
 

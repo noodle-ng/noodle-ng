@@ -6,7 +6,7 @@ from datetime import datetime
 from sqlalchemy import *
 from sqlalchemy.orm import mapper, relationship, backref
 from sqlalchemy import Table, ForeignKey, Column
-from sqlalchemy.types import Integer, Unicode, BigInteger, DateTime#, Float, Numeric
+from sqlalchemy.types import Integer, Unicode, BigInteger, DateTime, Float
 
 import noodle.model
 from noodle.model import DeclarativeBase, metadata, DBSession
@@ -224,7 +224,7 @@ class Host(DeclarativeBase):
     name = Column(Unicode(256))
     first_seen = Column(DateTime, nullable=False)
     last_update = Column(DateTime, nullable=False)
-    crawl_time = Column(Integer)
+    crawl_time = Column(Float)
     sharesize = Column(BigInteger)
     services = relationship(Service, backref="host")
     statistics = relationship(Statistic, backref="host")

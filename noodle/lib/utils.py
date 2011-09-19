@@ -118,16 +118,16 @@ def splitFileName(s):
     
     return (name, ext)
 
-def urlUnsplit(type,host,path,username=None,password=None):
+def urlUnsplit(type, host, path, username=None, password=None):
     """urlUnsplit(*urlSplit("smb://hans@wurst/bude"))"""
     if username:
         if password:
-            username = username + ":" + password
-        host = username + "@" + host
-    return urlunsplit((type,host,path,"",""))
+            username = username + u":" + password
+        host = username + u"@" + host
+    return urlunsplit((type, host, path, u"", u""))
 
 def urlSplit(url):
     """urlUnsplit(*urlSplit("smb://hans@wurst/bude"))"""
     UrlSplit = namedtuple("UrlSplit", ['scheme', 'hostname', 'path', 'username', 'password'])
     u = urlsplit(url)
-    return UrlSplit(u.scheme,u.hostname,u.path,u.username,u.password)
+    return UrlSplit(u.scheme, u.hostname, u.path, u.username, u.password)

@@ -1,0 +1,20 @@
+TODO 
+for the new, modular crawler engine of Noodle NG:
+
+- Standardized Logging (Really much output in debug,
+  only host-based information in info and failures etc in
+  warnings and up)
+- Better Error/Exception handling from database and filesystem
+  (without loosing traceback information, just in case)
+- User-Defined Handler-Functions for special tasks
+  (e.g. Special file .noodle in root-directory in which hosts
+  can specify files/directories to exclude etc)
+- More controllable debug-modes (disable/enable multiprocessing,
+  level of output, etc)
+- Think about all the Unicode-Stuff again... 
+- Port changes in CrawlerSMB to CrawlerFTP
+- Local file crawler (shouldn't be much work) -> CrawlerLOCAL
+
+- Reconcile classes... Propably it would be senseful to have
+  a SMBHost-Object like ftputil provides and use that for all
+  filesystem operations (proxyDownloader in Mind) 
