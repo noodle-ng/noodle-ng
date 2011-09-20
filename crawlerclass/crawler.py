@@ -3,6 +3,11 @@ Created on 05.09.2011
 
 @author: moschlar
 '''
+#TODO: Error handling
+#TODO: Docstrings
+#TODO: Logging
+
+#TODO: Propably not use transaction in the crawler
 
 import logging, posixpath, time
 from datetime import datetime
@@ -20,8 +25,10 @@ service_type = {"smb": ServiceSMB, "ftp": ServiceFTP}
 log = logging.getLogger(__name__)
 
 class Crawler():
+    #TODO: Docstrings
     
     def __init__(self, type, session, hostname, ip, username=None, password=None):
+        #TODO: Docstrings
         self.type = type
         self.session = session
         self.hostname = hostname
@@ -30,15 +37,20 @@ class Crawler():
         self.password = password
     
     def path_split(self, path):
+        #TODO: Docstrings
         return posixpath.split(path)
     
     def path_join(self, a, *p):
+        #TODO: Docstrings
         return posixpath.join(a, *p)
     
     def path_splitext(self, file):
+        #TODO: Docstrings
         return posixpath.splitext(file)
     
     def dblist(self, database_dir):
+        #TODO: Docstrings
+        #TODO: Move this to model
         folders = {}
         files = {}
         for child in database_dir.children:
@@ -54,11 +66,12 @@ class Crawler():
         return (folders, files)
     
     def walker(self, database_dir, host_dir):
+        #TODO: Docstrings
         
         log.debug("Started crawling %s" % host_dir)
         
         # Variables for tracking statistics
-        newsum = updsum = delsum = 0
+        sizesum = newsum = updsum = delsum = 0
         
         # Get lists for host and database
         host_folders, host_files = self.onewalk(host_dir)
@@ -86,6 +99,7 @@ class Crawler():
             file.name = name
             file.extension = ext
             file.size = stat[6]
+            sizesum += file.size
             file.date = datetime.fromtimestamp(stat[8])
             file.last_update = datetime.now()
             database_dir.children.append(file)
@@ -101,11 +115,16 @@ class Crawler():
                 file.size = stat[6]
                 file.date = datetime.fromtimestamp(stat[8])
                 file.last_update = datetime.now()
+            sizesum += file.size
         
         for delFile in delFiles:
             log.debug("Delete: %s" % delFile)
             delsum += 1
-            del database_dir.children[database_dir.children.index(delFile)]
+            try:
+                del database_dir.children[database_dir.children.index(delFile)]
+            except Exception,e:
+                log.warning("Could not delete %s from database: %s" % (delFile, e))
+            del db_files[delFile]
         
         for newFolder in newFolders:
             log.debug("New: %s" % newFolder)
@@ -118,27 +137,36 @@ class Crawler():
         for updateFolder in updateFolders:
             log.debug("Update: %s" % updateFolder)
             pass
-            # Not sure what to do here, since we mostly can't get stats from a directory
+            updsum += 1
+            # TODO: Not sure what to do here, since we mostly can't get stats from a directory
+            # - We could set its size to the sum of its contents
+            # - We could set its last_update when any of its children changes
             folder = db_folders[updateFolder]
             folder.last_update = datetime.now()
         
         for delFolder in delFolders:
             log.debug("Delete: %s" % delFolder)
             delsum += 1
-            del database_dir.children[database_dir.children.index(delFolder)]
+            try:
+                del database_dir.children[database_dir.children.index(delFolder)]
+            except Exception,e:
+                log.warning("Could not delete %s from database: %s" % (delFile, e))
+            del db_folders[delFolder]
         
         # Perform recursive walking and sum up the stats
         for folder in db_folders.itervalues():
-            new, updated, deleted = self.walker(folder,self.path_join(host_dir, folder.name))
+            size, new, updated, deleted = self.walker(folder,self.path_join(host_dir, folder.name))
+            sizesum += size
             newsum += new
             updsum += updated
             delsum += deleted
         
         log.debug("Directory %s finished" % host_dir)
         
-        return (newsum, updsum, delsum)
+        return (sizesum, newsum, updsum, delsum)
     
     def run(self, host_dir=u"/"):
+        #TODO: Docstrings
         startTime = time.time()
         host = self.session.query(Host).filter(Host.ip == ipToInt(self.ip)).first() or Host(ipToInt(self.ip), unicode(self.hostname))
         self.session.add(host)
@@ -157,14 +185,20 @@ class Crawler():
         
         self.session.add(database_dir)
         
-        result = self.walker(database_dir, host_dir)
+        (s, n, u, d) = self.walker(database_dir, host_dir)
         
         endTime = time.time()
-        host.crawl_time = int(round(endTime - startTime))
-        log.debug("Crawl time: %d" % host.crawl_time)
-        log.debug("Crawler statistics: New: %d, Updated: %d, Deleted: %d" % result)
+        host.crawl_time = endTime - startTime
+        host.sharesize = s
+        
+        crawl_stat = model.Crawl(endTime - startTime,s,n,u,d)
+        host.statistics.append(crawl_stat)
+        
+        log.info("Crawl time: %fs" % host.crawl_time)
+        log.info("Total size of host %s: %ld" % (host.name, s))
+        log.info("Crawler statistics: New: %d, Updated: %d, Deleted: %d" % (n,u,d))
         log.debug("Session statistics: New: %d, Updated: %d, Deleted: %d" % (len(self.session.new), len(self.session.dirty), len(self.session.deleted)))
         
         transaction.commit()
         
-        return result
+        return (s,n,u,d)

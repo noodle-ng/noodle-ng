@@ -12,6 +12,12 @@ from noodle.controllers.error import ErrorController
 
 __all__ = ['RootController']
 
+#TODO: Everything
+#TODO: Split up controllers a little bit 
+#      (e.g. SearchController, DownloadController, etc)
+#TODO: Error handling in Production
+#TODO: Paging tutorial: http://turbogears.org/2.1/docs/modules/thirdparty/webhelpers_paginate.html#paginate-a-module-to-help-split-up-lists-or-results-from-orm-queries
+
 
 class RootController(BaseController):
     """

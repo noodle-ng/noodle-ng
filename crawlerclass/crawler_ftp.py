@@ -3,21 +3,28 @@ Created on 05.09.2011
 
 @author: moschlar
 '''
+#TODO: Error handling
+#TODO: Docstrings
+#TODO: Logging
 
 import logging
 from ftputil import FTPHost
 
+#TODO: CleanUp imports
 from noodle.lib.utils import ipToInt, intToIp, hasService, getHostAndAddr, urlSplit, urlUnsplit
 
 from crawlerclass.crawler import Crawler
 
+#TODO: Rename type...
 type = u"ftp"
 
 log = logging.getLogger(__name__)
 
 class CrawlerFTP(Crawler):
+    #TODO: Docstrings
     
     def __init__(self, session, host, username=None, password=None):
+        #TODO: Docstrings
         hostname, ip = getHostAndAddr(host)
         if not hasService(ip, type):
             raise Exception("No %s share on %s" % (type, hostname))
@@ -44,23 +51,28 @@ class CrawlerFTP(Crawler):
                     else:
                         continue
                 except Exception, e:
-                    log.debug("Could not evaluate %s: %s" % (self.host.path.join(path, entry), e))
+                    log.debug("Could not analyze %s: %s" % (self.host.path.join(path, entry), e))
                     continue
+        #TODO: Error handling
         except Exception, e:
-            log.debug("Could not get directory entries in %s: %s" % (path, e))
-            pass
+            log.warning("Could not get directory entries in %s: %s" % (path, e))
+            raise
         return (dirnames, filenames)
     
     def listdir(self, dir):
+        #TODO: Docstrings
         return self.host.listdir(dir)
     
     def isdir(self, path):
+        #TODO: Docstrings
         return self.host.path.isdir(path)
     
     def isfile(self, path):
+        #TODO: Docstrings
         return self.host.path.isfile(path)
     
     def stat(self, path):
+        #TODO: Docstrings
         try:
             return self.host.stat(path)
         except Exception, e:

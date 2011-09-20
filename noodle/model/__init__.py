@@ -59,6 +59,6 @@ def init_model(engine):
 
 
 # Import your model modules here.
-from noodle.model.share import Host, ServiceSMB, ServiceFTP, Folder, File, Ping, Content
+from noodle.model.share import Host, ServiceSMB, ServiceFTP, Folder, File, Ping,Crawl, Content
 #from noodle.model.meta import meta, metaAtom
 #from noodle.model.pinboard import post

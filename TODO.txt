@@ -8,3 +8,5 @@ TODO
   - Some functions now defined in model should not be there
 - Split controller (at least to SearchController and RootController) and migrate it
 - WRITE DOCUMENTATION ABOUT EVERY SINGLE STEP
+
+- Model Classes should provide more Constructors...
