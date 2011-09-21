@@ -135,6 +135,15 @@ def main():
     """Runs the crawler"""
     global debug
     
+    raise Exception("""This is not ready yet! Please use testcrawler.py for testing purposes 
+    (specify a host in the path variable).
+    It is advised that you use pysmbc==1.0.9 to avoid unicode conversion errors.
+    Also, the frontend is not yet ported to TG 2.1 yet, so to perform a search you have to manually
+    perform a query on the database file like this:
+    sqlite3 noodle.db 'SELECT * FROM shares WHERE name LIKE "%Kobe%"'
+    
+    For further questions and enhancement request, please contact Moritz Schlarb.""")
+    
     locations = parse_locations()
     
     log.info("Locations to crawl: %s" % locations)

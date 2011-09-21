@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 """The application's model objects"""
-
+from datetime import datetime
 from zope.sqlalchemy import ZopeTransactionExtension
 from sqlalchemy.orm import scoped_session, sessionmaker
 #from sqlalchemy import MetaData
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import event
 
 # Global session manager: DBSession() returns the Thread-local
 # session object appropriate for the current web request.
@@ -57,8 +58,10 @@ def init_model(engine):
 
     #mapper(Reflected, t_reflected)
 
-
 # Import your model modules here.
 from noodle.model.share import Host, ServiceSMB, ServiceFTP, Folder, File, Ping,Crawl, Content
 #from noodle.model.meta import meta, metaAtom
 #from noodle.model.pinboard import post
+
+from noodle.model.share import _update_timestamps
+event.listen(DBSession, "before_commit", _update_timestamps)

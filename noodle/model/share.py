@@ -3,8 +3,8 @@
 #TODO: Docstrings
 #TODO: Unicode awareness
 #TODO: Reconcile all functions here to new model structure
-#TODO: Propably use isFolder or isFile functions instead of getMediaType
-#TODO: Put setting of last_update into genreic model handling to avoid having to set it everytime
+#TODO: Probably use isFolder or isFile functions instead of getMediaType
+#TODO: Put setting of last_update into generic model handling to avoid having to set it everytime
 #TODO: Convention in CakePHP framework is : created, modified fields are automatically set and updated
 #      -> first_seen = created, last_update = modified
 
@@ -41,29 +41,43 @@ def makePretty(value):
             return unicode(int(cs)) + ' ' + suffix
     return u"very big"
 
-class Share(DeclarativeBase):
+class BaseColumns():
+    id = Column(Integer, primary_key=True)
+    created = Column(DateTime, nullable=False)
+    modified = Column(DateTime, nullable=False)
+
+def _update_timestamps(session, flush_context=None, instances=None):
+    #TODO: Docstring
+    for instance in session.new:
+        try:
+            instance.created = datetime.now()
+            instance.modified = datetime.now()
+        except:
+            pass
+    for instance in session.dirty:
+        try:
+            instance.modified = datetime.now()
+        except:
+            pass
+    for instance in session.deleted:
+        pass
+
+class Share(BaseColumns, DeclarativeBase):
     #TODO: Docstrings
     __tablename__ = 'shares'
-    id = Column(Integer, primary_key=True)
     parent_id = Column(Integer, ForeignKey('shares.id'))
     host_id = Column(Integer, ForeignKey('hosts.id'))
     # the filename without extension if the item has one
     name = Column(Unicode(256))
     # the creation date of the item which the hosts provides
     date = Column(DateTime)
-    # the date the crawler first indexed the item
-    first_seen = Column(DateTime, nullable=False)
-    # date the last time the item was updated by the crawler (i.e. size changed)
-    last_update = Column(DateTime, nullable=False)
     #meta = relation("meta", uselist=False, backref="share")
     type = Column(Unicode(20), nullable=False)
     __mapper_args__ = {'polymorphic_on': type}
     
-    def __init__(self, first_seen=datetime.now(), last_update=datetime.now()):
+    def __init__(self):
         #TODO: Docstrings
-        ''' set the first_seen and last_update fields'''
-        self.first_seen = first_seen
-        self.last_update = last_update
+        pass
     
     def __before_commit__(self, session=False, status=False):
         #TODO: Docstrings
@@ -142,9 +156,22 @@ class Folderish(Share):
         #TODO: Docstrings
         Share.__init__(self, **kwargs)
     
-    #TODO
-    #def getChildrenDict(self):
-    #    
+    @property
+    def childDict(self):
+        #TODO: Docstrings
+        folders = {}
+        files = {}
+        for child in self.children:
+            if isinstance(child, Folder):
+                folders[child.name] = child
+            elif isinstance(child, File):
+                if child.extension:
+                    files[child.name + child.extension] = child
+                else:
+                    files[child.name] = child
+            else:
+                continue
+        return (folders, files)
     
     def getMediaType(self):
         #TODO: Docstrings
@@ -242,12 +269,10 @@ class ServiceFTP(Service):
 
 ###############################################################################
 
-class Statistic(DeclarativeBase):
+class Statistic(BaseColumns, DeclarativeBase):
     #TODO: Docstrings
     __tablename__ = 'statistics'
-    id = Column(Integer, primary_key=True)
     host_id = Column(Integer, ForeignKey('hosts.id'), nullable=False)
-    date = Column(DateTime, nullable=False)
     type = Column(Unicode(20), nullable=False)
     __mapper_args__ = {'polymorphic_on': type}
 
@@ -256,11 +281,10 @@ class Ping(Statistic):
     value = Column(Float, nullable=True)
     __mapper_args__ = {'polymorphic_identity': u'ping'}
     
-    def __init__(self, host=None, value=None, date=datetime.now()):
+    def __init__(self, host=None, value=None):
         #TODO: Docstrings
         self.host = host
         self.value = value
-        self.date = date
 
 class Crawl(Statistic):
     #TODO: Docstrings
@@ -273,7 +297,7 @@ class Crawl(Statistic):
     #error = Column(Boolean)
     __mapper_args__ = {'polymorphic_identity': u'crawl'}
     
-    def __init__(self, crawl_time, sharesize, new=None, changed=None, deleted=None, date=datetime.now()):
+    def __init__(self, crawl_time, sharesize, new=None, changed=None, deleted=None):
         #TODO: Docstrings
         self.crawl_time = crawl_time
         self.sharesize = sharesize
@@ -283,31 +307,25 @@ class Crawl(Statistic):
             self.changed = changed
         if deleted:
             self.deleted = deleted
-        self.date = date
 
 ###############################################################################
 
-class Host(DeclarativeBase):
+class Host(BaseColumns, DeclarativeBase):
     #TODO: Docstrings
     __tablename__ = 'hosts'
-    id = Column(Integer, primary_key=True)
-    ip = Column(BigInteger, nullable=False)
+    ip = Column(BigInteger, nullable=False, unique=True)
     name = Column(Unicode(256))
-    first_seen = Column(DateTime, nullable=False)
-    last_update = Column(DateTime, nullable=False)
     #TODO: Depcrecate crawl_time here, instead move it to statistics
     crawl_time = Column(Float)
     sharesize = Column(BigInteger)
     services = relationship(Service, backref="host")
     statistics = relationship(Statistic, backref="host")
     
-    def __init__(self, ip, name=None, first_seen=datetime.now(), last_update=datetime.now()):
+    def __init__(self, ip, name=None):
         #TODO: Docstrings
         self.ip = ip
         if name:
             self.name = name
-        self.first_seen = first_seen
-        self.last_update = last_update
     
     #@property
     def getPrettyShareSize(self):
