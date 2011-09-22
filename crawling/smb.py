@@ -10,11 +10,10 @@ import smbc
 
 from noodle.lib.utils import ipToInt, intToIp, hasService, getHostAndAddr, urlSplit, urlUnsplit
 
-from crawl import stat, Host
+from . import stat, Host
 
 log = logging.getLogger("SMBHost")
 
-#crawler_type = u"smb"
 smbc_type = {'share': 3, 'folder': 7, 'file': 8}
 #TODO: Docstring
 
@@ -25,9 +24,10 @@ class SMBHost(Host):
     
     def __init__(self, host, username=None, password=None):
         #TODO: Docstring
+        Host.__init__(self)
         hostname, ip = getHostAndAddr(host)
         if not ip:
-            raise Exception("Host %s not reachable" % (ip))
+            raise Exception("Host %s not reachable" % (host))
         if not hasService(ip, self.type):
             raise Exception("No %s service on %s" % (self.type, hostname))
         self.hostname = hostname
@@ -35,7 +35,6 @@ class SMBHost(Host):
         self.username = username
         self.password = password
         self.c = smbc.Context()
-        #TODO:
     
     def uri(self, path):
         #TODO: Docstrings
@@ -48,10 +47,22 @@ class SMBHost(Host):
         
         try:
             for entry in self.c.opendir(self.uri(path)).getdents():
-                if entry.name == "." or entry.name == "..":
+                if entry.name == "." or entry.name == ".." or \
+                    entry.name.endswith("$"):
+                    #entry.name == "print$" or entry.name == "IPC$": \
                     # Skipping . and ..
                     continue
-                elif entry.smbc_type == smbc_type['folder'] or entry.smbc_type == smbc_type['share']:
+                elif entry.smbc_type == smbc_type['share']:
+                    # Share
+                    try:
+                        subpath = self.uri(self.path_join(path, entry.name))
+                        self.c.opendir(subpath)
+                    except smbc.PermissionError as e:
+                        log.info("Could not access share %s: %s" % (subpath, e))
+                        continue
+                    else:
+                        dirnames.append(unicode(entry.name, encoding="utf-8"))
+                elif entry.smbc_type == smbc_type['folder']:
                     # Folder
                     dirnames.append(unicode(entry.name, encoding="utf-8"))
                 elif entry.smbc_type == smbc_type['file']:
@@ -59,14 +70,14 @@ class SMBHost(Host):
                     filenames.append(unicode(entry.name, encoding="utf-8"))
                 else:
                     continue
-        except smbc.PermissionError, e:
+        except smbc.PermissionError as e:
             log.info(e)
             pass
-        except smbc.NoEntryError, e:
+        except smbc.NoEntryError as e:
             log.info(e)
             pass
         #TODO: Error handling
-        except Exception, e:
+        except Exception as e:
             log.warning("Could not get directory entries in %s: %s" % (self.uri(path), e))
             raise
         return (dirnames, filenames)
@@ -91,8 +102,9 @@ class SMBHost(Host):
     def stat(self, path):
         #TODO: Docstrings
         try:
-            return stat(*self.c.open(self.uri(path)).fstat())
-        except Exception, e:
+            return stat(*self.c.stat(self.uri(path)))
+        except Exception as e:
+            #TODO: Error handling
             log.info("Could not get stat for %s: %s" % (self.uri(path), e))
             return stat(0,0,0,0,0,0,0,0,0,0)
     

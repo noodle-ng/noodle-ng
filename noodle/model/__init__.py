@@ -59,9 +59,9 @@ def init_model(engine):
     #mapper(Reflected, t_reflected)
 
 # Import your model modules here.
-from noodle.model.share import Host, ServiceSMB, ServiceFTP, Folder, File, Ping,Crawl, Content
+from noodle.model.share import Host, Service, ServiceSMB, ServiceFTP, Folder, File, Ping, Crawl
 #from noodle.model.meta import meta, metaAtom
 #from noodle.model.pinboard import post
 
-from noodle.model.share import _update_timestamps
-event.listen(DBSession, "before_commit", _update_timestamps)
+from noodle.model.share import update_timestamps
+event.listen(DBSession, "before_commit", update_timestamps)

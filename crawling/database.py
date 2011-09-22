@@ -6,16 +6,13 @@ Created on 21.09.2011
 #TODO: Docstring
 
 import logging
-from datetime import datetime
 
-#import sqlalchemy
 from sqlalchemy.orm import sessionmaker, scoped_session, exc
 from sqlalchemy import create_engine, event
 
 from noodle.lib.utils import ipToInt, intToIp, hasService, getHostAndAddr, urlSplit, urlUnsplit
 import noodle.model as model
-from noodle.model.share import Host, Folder, File, Service, ServiceSMB, ServiceFTP, Crawl
-from noodle.model.share import _update_timestamps
+from noodle.model import Host, Folder, File, Service, ServiceSMB, ServiceFTP, Crawl, update_timestamps
 
 log = logging.getLogger("DatabaseSession")
 
@@ -38,8 +35,8 @@ class DatabaseSession():
         
         # Register custom hooks
         
-        event.listen(self.session, "before_commit", _update_timestamps)
-        event.listen(self.session, "before_flush", _update_timestamps)
+        event.listen(self.session, "before_commit", update_timestamps)
+        event.listen(self.session, "before_flush", update_timestamps)
 
     
     def getHost(self, ip, hostname):

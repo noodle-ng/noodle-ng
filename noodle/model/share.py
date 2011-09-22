@@ -46,7 +46,7 @@ class BaseColumns():
     created = Column(DateTime, nullable=False)
     modified = Column(DateTime, nullable=False)
 
-def _update_timestamps(session, flush_context=None, instances=None):
+def update_timestamps(session, flush_context=None, instances=None):
     #TODO: Docstring
     for instance in session.new:
         try:

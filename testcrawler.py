@@ -27,7 +27,7 @@ logging.basicConfig(level=logging.DEBUG)
 sqlalchemy_url = config.get('main', 'sqlalchemy.url')
 sqlalchemy_echo = config.getboolean('main', 'sqlalchemy.echo')
 
-path = u"smb://Gast:123Dabei@servant/"
+path = u"smb://Gast:123Dabei@dns320/"
 url = urlSplit(path)
 
 def main():
