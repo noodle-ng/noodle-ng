@@ -46,22 +46,6 @@ class BaseColumns():
     created = Column(DateTime, nullable=False)
     modified = Column(DateTime, nullable=False)
 
-def update_timestamps(session, flush_context=None, instances=None):
-    #TODO: Docstring
-    for instance in session.new:
-        try:
-            instance.created = datetime.now()
-            instance.modified = datetime.now()
-        except:
-            pass
-    for instance in session.dirty:
-        try:
-            instance.modified = datetime.now()
-        except:
-            pass
-    for instance in session.deleted:
-        pass
-
 class Share(BaseColumns, DeclarativeBase):
     #TODO: Docstrings
     __tablename__ = 'shares'

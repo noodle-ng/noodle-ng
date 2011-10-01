@@ -7,11 +7,19 @@
   <xi:include href="master.html" />
 
 <head>
-  <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" py:if="False"/>
-  <title></title>
+  <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:if="False"/>
+  <title>A ${code} Error has Occurred </title>
 </head>
 
 <body>
-    <h1>Über</h1>
+<h1>Error ${code}</h1>
+
+<?python
+import re
+mf = re.compile(r'(</?)script', re.IGNORECASE)
+def fixmessage(message):
+    return mf.sub(r'\1noscript', message)
+?>
+<div>${XML(fixmessage(message))}</div>
 </body>
 </html>

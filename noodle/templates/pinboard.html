@@ -1,0 +1,69 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <xi:include href="master.html" />
+
+<head>
+  <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+  <title>Noodle NG</title>
+  <link rel="stylesheet" type="text/css" href="${tg.url('/css/index.css')}" />
+  
+  <style type="text/css">
+	div.post {
+		width: 600px;
+		margin-right: auto;
+		margin-left: auto;
+		clear: both;
+		padding: 10px;
+	}
+	
+	div.date {
+		float: right;
+		font-size: x-small;
+		margin: 5px;
+	}
+	
+	div.text {
+		text-align: justify;
+	}
+	
+	div.author {
+		font-size: large;
+	}
+	
+	form {
+		margin-left: auto;
+		margin-right: auto;
+		width: 500px;
+	}
+  </style>
+</head>
+
+<body>
+
+    <h1>Pinnwand</h1>
+
+<h3>Neuen Eintrag erstellen</h3>
+<div>
+    <div py:replace="tmpl_context.form()">Pinboard Form</div>
+</div>
+
+<h3>Einträge ansehen</h3>
+<div id="posts">
+	<div class="post" py:for="post in posts">
+		<div class="author">${post.author}</div>
+		<div class="date">${post.date.strftime('%H:%M %d.%m.%Y')}</div>
+		<div class="text">${post.escaped_text}</div>
+	</div>
+</div>
+
+<center>
+	${currentPage.pager()}
+</center>
+
+</body>
+</html>
+

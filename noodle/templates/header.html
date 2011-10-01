@@ -3,10 +3,12 @@
       py:strip="">
 <py:def function="header">
   <div id="header">
-  	<h1>
-  		Welcome to TurboGears 2
-		<span class="subtitle">The Python web metaframework</span>
-	</h1>
+    <h1>
+      ${tg.config.title} ${tg.config.version}
+      <span py:if="hasattr(tg.config,'subtitle') and tg.config.subtitle" class="subtitle">${tg.config.subtitle}</span>
+<!--!    Welcome to TurboGears 2
+        <span class="subtitle">The Python web metaframework</span>-->
+    </h1>
   </div>
 </py:def>
 </html>

@@ -58,10 +58,26 @@ def init_model(engine):
 
     #mapper(Reflected, t_reflected)
 
+
+def update_timestamps(session, flush_context=None, instances=None):
+    #TODO: Docstring
+    for instance in session.new:
+        try:
+            instance.created = datetime.now()
+            instance.modified = datetime.now()
+        except:
+            pass
+    for instance in session.dirty:
+        try:
+            instance.modified = datetime.now()
+        except:
+            pass
+    for instance in session.deleted:
+        pass
+
 # Import your model modules here.
 from noodle.model.share import Host, Service, ServiceSMB, ServiceFTP, Folder, File, Ping, Crawl
 #from noodle.model.meta import meta, metaAtom
-#from noodle.model.pinboard import post
+from noodle.model.pinboard import Post
 
-from noodle.model.share import update_timestamps
 event.listen(DBSession, "before_commit", update_timestamps)

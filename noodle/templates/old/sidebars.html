@@ -1,7 +1,7 @@
 <html xmlns:py="http://genshi.edgewall.org/"
       xmlns:xi="http://www.w3.org/2001/XInclude"
       py:strip="">
-<!--!
+
 <py:def function="sidebar_top">
   <div id="sb_top" class="sidebar">
       <h2>Get Started with TG2</h2>
@@ -27,15 +27,6 @@
         <li><a href="http://turbogears.org/2.1/docs/main/Contributing.html#installing-the-development-version-of-turbogears-2-from-source">Follow these instructions</a> For installing your copy</li>
         <li><a href="http://trac.turbogears.org/browser/trunk">TG2 Trac's svn view</a> In case you need a quick look</li>
         <li><a href="http://groups.google.com/group/turbogears-trunk"> Join the TG-Trunk Mail List</a> for TG2 discuss/dev </li>
-      </ul>
-  </div>
-</py:def>
--->
-<py:def function="sidebar_quicksearch">
-  <div id="sb_quicksearch" class="sidebar">
-      <h2>Schnellsuche</h2>
-      <ul class="links">
-        <li py:for="i in []"><a href="${tg.url('')}"></a></li>
       </ul>
   </div>
 </py:def>

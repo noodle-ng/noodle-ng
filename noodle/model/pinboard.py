@@ -10,7 +10,7 @@ from genshi.input import HTML
 
 from noodle.model import DeclarativeBase, metadata, DBSession
 
-class post(DeclarativeBase):
+class Post(DeclarativeBase):
     ''' a pinboard post entry '''
     __tablename__ = 'pinboard'
     id = Column(Integer, primary_key=True)

@@ -37,3 +37,7 @@ base_config.renderers.append('genshi')
 base_config.use_sqlalchemy = True
 base_config.model = noodle.model
 base_config.DBSession = noodle.model.DBSession
+
+base_config.title = "Noodle NG"
+base_config.version = "2.0-alpha"
+base_config.subtitle = "File search engine"
