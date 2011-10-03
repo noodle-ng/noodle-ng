@@ -18,12 +18,20 @@ smbc_type = {'share': 3, 'folder': 7, 'file': 8}
 #TODO: Docstring
 
 class SMBHost(Host):
-    #TODO: Docstring
+    """SMBHost is a class for smb connections to hosts
+    
+    It makes heavy usage of pysmbc methods.
+    """
     
     type = u"smb"
     
     def __init__(self, host, username=None, password=None):
-        #TODO: Docstring
+        """Initialize the SMBHost object
+        
+        host can be an ip address or a hostname, any of it will be resolved, if possible
+        if username and passwort are not set, anonymous access will be tried
+        """
+        
         Host.__init__(self)
         hostname, ip = getHostAndAddr(host)
         if not ip:
@@ -37,11 +45,11 @@ class SMBHost(Host):
         self.c = smbc.Context()
     
     def uri(self, path):
-        #TODO: Docstrings
+        """Generates an uri for the given path, based on the objects host, username and password"""
         return urlUnsplit(self.type, self.ip, path, self.username or None, self.password or None).encode(encoding="utf-8")
     
     def onewalk(self, path):
-        #TODO: Docstring
+        """Returns a tuple (folders, files) for the directory at the given path"""
         dirnames = []
         filenames = []
         
@@ -83,24 +91,24 @@ class SMBHost(Host):
         return (dirnames, filenames)
     
     def listdir(self, dir):
-        #TODO: Docstrings
+        """List directory entries for the given path"""
         (dirnames, filenames) = self.onewalk(dir)
         return dirnames + filenames
     
     def isdir(self, path):
-        #TODO: Docstring
+        """Test if path is a directory"""
         (head, tail) = self.path_split(path)
         (dirnames, filenames) = self.onewalk(head)
         return tail in dirnames
     
     def isfile(self, path):
-        #TODO: Docstring
+        """Test if path is a file"""
         (head, tail) = self.path_split(path)
         (dirnames, filenames) = self.onewalk(head)
         return tail in filenames
     
     def stat(self, path):
-        #TODO: Docstrings
+       """Return a namedtuple stat for the directory entry at path"""
         try:
             return stat(*self.c.stat(self.uri(path)))
         except Exception as e:

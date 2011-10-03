@@ -3,6 +3,7 @@ Created on 21.09.2011
 
 @author: moschlar
 '''
+#TODO: Docstring
 
 import logging, time
 from datetime import datetime
@@ -12,7 +13,11 @@ from noodle.model.share import Folder, File
 log = logging.getLogger("Crawler")
 
 class Crawler():
-    #TODO: Docstring
+    """Crawler main class
+    
+    Performs the crawling steps that merge the tree from
+    the host and the database and everything inbetween
+    """
     
     def __init__(self, databasesession, host, extension=None):
         #TODO: Docstring
@@ -23,7 +28,7 @@ class Crawler():
         self.extension = extension
     
     def walker(self, database_dir, host_dir):
-        #TODO: Docstring
+        """Recursive walking function"""
         
         log.debug("Started crawling %s" % host_dir)
         
@@ -176,7 +181,8 @@ class Crawler():
         return (sizesum, newsum, updsum, delsum)
     
     def getFolder(self, service, path):
-        #TODO: Docstring
+        """Get the database top folder if crawling was started
+        with a given path."""
         dir = service
         assert dir in self.session
         for p in (p for p in self.host.path_fullsplit(path) if p):
@@ -196,9 +202,10 @@ class Crawler():
     #TODO: Find name for first function
     def start(self):
         #TODO: Docstring
-        pass
+        self.run()
     def run(self, host_dir=""):
-        #TODO: Docstring
+        """Get top folder or service from database and from host
+        and start the recursive walking process"""
         startTime = time.time()
         db_host = self.db.getHost(self.host.ip, self.host.hostname)
         assert db_host in self.session
@@ -221,3 +228,4 @@ class Crawler():
         log.info("Crawler statistics: New: %d, Updated: %d, Deleted: %d, Sharesize: %ld, Crawling time: %f" % (n,u,d,s,endTime-startTime))
         
         return (s, n, u, d)
+    

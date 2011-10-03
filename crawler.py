@@ -42,6 +42,7 @@ except:
 
 debug = config.getboolean('main', 'debug')
 if debug:
+    # Ignore logging level and multiprocessing
     logging.basicConfig(level=logging.DEBUG)
     processes = 0
 else:
@@ -54,7 +55,8 @@ sqlalchemy_echo = config.getboolean('main', 'sqlalchemy.echo')
 #BETA BETA BETA BETA BETA BETA BETA BETA BETA BETA
 
 def parse_locations():
-    #TODO: Docstrings
+    """Parse the location either from argv (if given) or from
+    the configuration file"""
     #TODO: Error handling
     locations = []
     
@@ -134,17 +136,21 @@ def main():
     """Runs the crawler"""
     global debug
     
+    print "BETA BETA BETA BETA BETA BETA BETA BETA BETA BETA"
+    
     locations = parse_locations()
     
     log.info("Locations to crawl: %s" % locations)
     
     if processes == 0:
+        # No multiprocessing
         for location in locations:
             log.info("Crawling location %s" % location['name'])
             for host in location['hosts']:
                 crawl(host, location['type'], location['credentials'], setup_worker)
     else:
         #TODO: Error handling - Find out what can go wrong with a worker pool
+        #TODO: Handle stopping of child processes if parent process receives KeyboardInterrupt or similar
         pool = multiprocessing.Pool(processes, setup_worker)
         for location in locations:
             log.info("Crawling location %s" % location['name'])

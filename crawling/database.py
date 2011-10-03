@@ -20,6 +20,7 @@ service_type = {"smb": ServiceSMB, "ftp": ServiceFTP}
 #TODO: Docstring
 
 class DatabaseSession():
+    """DatabaseSession performs all database operations"""
     
     def __init__(self, url, echo=False):
         #TODO: Docstring
@@ -40,7 +41,11 @@ class DatabaseSession():
 
     
     def getHost(self, ip, hostname):
-        #TODO: Docstring
+        """Get the host for the given ip
+        
+        If the host is already in the database, return it
+        if not, create a new Host object, add it to the session and return it
+        """
         try:
             host = self.session.query(Host).filter(Host.ip == ipToInt(ip)).one()
         except exc.NoResultFound:
@@ -54,12 +59,19 @@ class DatabaseSession():
             #    self.session.delete(host)
             raise
         else:
+            # Update hostname
             if host.name != unicode(hostname):
                 host.name = unicode(hostname)
         return host
     
     def getService(self, host, type, username, password):
-        #TODO: Docstring
+        """Get a service for a given host, type and credentials
+        
+        If a service with the given parameters does already exist in the
+        database, return it
+        it not, create a new Service object, add it to the session 
+        and return it
+        """
         try:
             service = self.session.query(service_type[type]).filter(Service.host==host).filter(Service.username == username).filter(Service.password == password).one()
         except exc.NoResultFound:
@@ -72,13 +84,16 @@ class DatabaseSession():
         return service
     
     def newStat(self, host, startTime, endTime, s, n, u, d):
-        #TODO: Docstring
+        """Make a new Stat object for a crawl"""
         crawl = Crawl(endTime-startTime,s,n,u,d)
         host.statistics.append(crawl)
         return crawl
     
     def commit(self):
+        """Commit changes in the current session to the database"""
         self.session.commit()
     
     def debug(self):
+        """Print out session object instance state information for
+        debugging purposes"""
         log.debug("New: %s, Dirty: %s, Deleted: %s" % (self.session.new, self.session.dirty, self.session.deleted))

@@ -21,35 +21,55 @@ class NoServiceException(Exception):
     pass
 
 class Host():
-    #TODO: Docstring
+    """Host is a base class for all implementations of host access methods
+    
+    Because there are some methods like FTP that require a persistent connection
+    to a server I've devided to do this as an object that needs its host information
+    at initialization time
+    """
     def __init__(self):
-        #TODO: Docstring
+        """Initialize the Host object"""
         self.path_split = posixpath.split
         self.path_join = posixpath.join
         self.path_splitext = posixpath.splitext
     
     def path_fullsplit(self, path):
-        #TODO: Docstring
+        """Split a given path into its elements"""
         return path.strip(posixpath.sep).split(posixpath.sep)
     
     def onewalk(self, path):
-        #TODO: Docstring
+        """Returns a tuple (folders, files) for the directory at the given path
+        
+        Fail if path is not a directory
+        """
         raise NotImplementedError
+    
     def listdir(self, path):
-        #TODO: Docstringcrawl
+        """List directory entries for the given path
+        
+        Fail if path is not a directory
+        """
         raise NotImplementedError
+    
     def isdir(self, path):
-        #TODO: Docstring
+        """Test if path is a directory"""
         raise NotImplementedError
+    
     def isfile(self, path):
-        #TODO: Docstring
+        """Test if path is a file"""
         raise NotImplementedError
+    
     def stat(self, path):
-        #TODO: Docstring
+        """Return a namedtuple stat for the directory entry at path"""
         raise NotImplementedError
+    
 
 class Extension():
-    #TODO: Docstring
+    """Shall be a base class for crawler extension modules
+    
+    Extensions can use special function names as hooks during the 
+    crawling process
+    """
     pass
 
 from crawler import Crawler
