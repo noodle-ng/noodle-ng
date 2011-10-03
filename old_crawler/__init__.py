@@ -1,2 +1,0 @@
-from crawler_smb import CrawlerSMB
-from crawler_ftp import CrawlerFTP
