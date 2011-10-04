@@ -108,7 +108,7 @@ class SMBHost(Host):
         return tail in filenames
     
     def stat(self, path):
-       """Return a namedtuple stat for the directory entry at path"""
+        """Return a namedtuple stat for the directory entry at path"""
         try:
             return stat(*self.c.stat(self.uri(path)))
         except Exception as e:
