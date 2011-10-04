@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 """Main Controller"""
+import logging
 
 from tg import expose, flash, require, url, request, redirect, config, tmpl_context
 from tg.i18n import ugettext as _, lazy_ugettext as l_
 
 from noodle.lib.base import BaseController
-from noodle.model import DBSession, metadata
+from noodle.model import DBSession, metadata, getShareSum
 from noodle import model
 
 from noodle.controllers.error import ErrorController
@@ -16,7 +17,6 @@ __all__ = ['RootController']
 
 #TODO: Everything
 #TODO: Error handling in Production
-
 
 class RootController(BaseController):
     """
@@ -35,6 +35,7 @@ class RootController(BaseController):
 
     error = ErrorController()
     
+    # Import sub-controllers
     search = SearchController()
     pinboard = PinboardController()
     
@@ -43,13 +44,15 @@ class RootController(BaseController):
 #    def _default(self, *args, **kwargs):
 #        return dict(page='not_found', args=args, kwargs=kwargs)
 
+    # Map top-level paths to sub-controllers
     advanced_search = search.advanced
     quicksearch = search.quick
 
     @expose('noodle.templates.index')
     def index(self):
         """Handle the front-page."""
-        return dict(page='index')
+        sharesum = getShareSum()
+        return dict(page='index', sharesum=sharesum)
 
     @expose('noodle.templates.about')
     def about(self):

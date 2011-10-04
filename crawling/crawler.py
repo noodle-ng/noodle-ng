@@ -219,8 +219,10 @@ class Crawler():
         
         endTime = time.time()
         
-        self.db.newStat(db_host, startTime, endTime, s, n, u, d)
+        stat=self.db.newStat(db_host, startTime, endTime, s, n, u, d)
         # 1 new and 1 dirty objects in session are from the stat above
+        db_host.sharesize = stat.sharesize
+        db_host.crawl_time = stat.crawl_time
         log.debug("Session statistics: New: %d, Updated: %d, Deleted: %d" % (len(self.session.new), len(self.session.dirty), len(self.session.deleted)))
         
         self.session.commit()

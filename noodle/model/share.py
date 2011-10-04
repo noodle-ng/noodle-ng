@@ -8,21 +8,31 @@
 #TODO: Convention in CakePHP framework is : created, modified fields are automatically set and updated
 #      -> first_seen = created, last_update = modified
 
+import logging
 from datetime import datetime
 
 from sqlalchemy import *
 from sqlalchemy.orm import mapper, relationship, backref
-from sqlalchemy import Table, ForeignKey, Column
+from sqlalchemy import Table, ForeignKey, Column, func
 from sqlalchemy.types import Integer, Unicode, BigInteger, DateTime, Float
 
 import noodle.model
-from noodle.model import DeclarativeBase, metadata, DBSession
-
+from noodle.model import BaseColumns, DeclarativeBase, metadata, DBSession
+from stats import Statistic
 #from noodle.lib.utils import ipToInt, intToIp 
 
 videoExt = [u"avi", u"mkv", u"mp4", u"mpv", u"mov", u"mpg", u"divx", u"vdr"]
 audioExt = [u"mp3", u"aac", u"ogg", u"m4a", u"wav"]
 mediaExt = videoExt + audioExt
+
+def getShareSum():
+    #TODO: Docstring
+    try:
+        sharesum = DBSession.query(func.sum(Host.sharesize)).one()[0]
+    except Exception as e:
+        logging.warn(e)
+        sharesum = 0
+    return makePretty(sharesum)
 
 def makePretty(value):
     ''' convert bit values in human readable form '''
@@ -40,11 +50,6 @@ def makePretty(value):
         if cs < 1024:
             return unicode(int(cs)) + ' ' + suffix
     return u"very big"
-
-class BaseColumns():
-    id = Column(Integer, primary_key=True)
-    created = Column(DateTime, nullable=False)
-    modified = Column(DateTime, nullable=False)
 
 class Share(BaseColumns, DeclarativeBase):
     #TODO: Docstrings
@@ -250,47 +255,6 @@ class ServiceSMB(Service):
 class ServiceFTP(Service):
     #TODO: Docstrings
     __mapper_args__ = {'polymorphic_identity': u'serviceFTP'}
-
-###############################################################################
-
-class Statistic(BaseColumns, DeclarativeBase):
-    #TODO: Docstrings
-    __tablename__ = 'statistics'
-    host_id = Column(Integer, ForeignKey('hosts.id'), nullable=False)
-    type = Column(Unicode(20), nullable=False)
-    __mapper_args__ = {'polymorphic_on': type}
-
-class Ping(Statistic):
-    #TODO: Docstrings
-    value = Column(Float, nullable=True)
-    __mapper_args__ = {'polymorphic_identity': u'ping'}
-    
-    def __init__(self, host=None, value=None):
-        #TODO: Docstrings
-        self.host = host
-        self.value = value
-
-class Crawl(Statistic):
-    #TODO: Docstrings
-    # sqlite3 devdata.db 'SELECT statistics.crawl_time, hosts.name FROM statistics JOIN hosts on hosts.id == statistics.host_id WHERE statistics.type == "crawl" '
-    crawl_time = Column(Float)
-    new = Column(Integer)
-    changed = Column(Integer)
-    deleted = Column(Integer)
-    sharesize = Column(BigInteger)
-    #error = Column(Boolean)
-    __mapper_args__ = {'polymorphic_identity': u'crawl'}
-    
-    def __init__(self, crawl_time, sharesize, new=None, changed=None, deleted=None):
-        #TODO: Docstrings
-        self.crawl_time = crawl_time
-        self.sharesize = sharesize
-        if new:
-            self.new = new
-        if changed:
-            self.changed = changed
-        if deleted:
-            self.deleted = deleted
 
 ###############################################################################
 

@@ -151,7 +151,7 @@ def main():
     else:
         #TODO: Error handling - Find out what can go wrong with a worker pool
         #TODO: Handle stopping of child processes if parent process receives KeyboardInterrupt or similar
-        pool = multiprocessing.Pool(processes, setup_worker)
+        pool = multiprocessing.Pool(min(processes,sum(len(location['hosts']) for location in locations)), setup_worker)
         for location in locations:
             log.info("Crawling location %s" % location['name'])
             for host in location['hosts']:

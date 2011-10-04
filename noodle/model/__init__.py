@@ -5,7 +5,8 @@ from zope.sqlalchemy import ZopeTransactionExtension
 from sqlalchemy.orm import scoped_session, sessionmaker
 #from sqlalchemy import MetaData
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import event
+from sqlalchemy.types import Integer, DateTime
+from sqlalchemy import event, Column
 
 # Global session manager: DBSession() returns the Thread-local
 # session object appropriate for the current web request.
@@ -75,8 +76,14 @@ def update_timestamps(session, flush_context=None, instances=None):
     for instance in session.deleted:
         pass
 
+class BaseColumns():
+    id = Column(Integer, primary_key=True)
+    created = Column(DateTime, nullable=False)
+    modified = Column(DateTime, nullable=False)
+
 # Import your model modules here.
-from noodle.model.share import Host, Service, ServiceSMB, ServiceFTP, Folder, File, Ping, Crawl
+from noodle.model.share import Host, Service, ServiceSMB, ServiceFTP, Folder, File, getShareSum
+from stats import Statistic, Ping, Crawl
 #from noodle.model.meta import meta, metaAtom
 from noodle.model.pinboard import Post
 
