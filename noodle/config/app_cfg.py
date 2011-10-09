@@ -38,6 +38,9 @@ base_config.use_sqlalchemy = True
 base_config.model = noodle.model
 base_config.DBSession = noodle.model.DBSession
 
+# Register handler for global template variables
+base_config.variable_provider = helpers.add_global_tmpl_vars
+
 base_config.title = "Noodle NG"
 base_config.version = "2.0-alpha"
 base_config.subtitle = "File search engine"
