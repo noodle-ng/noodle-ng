@@ -1,29 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: iso-8859-1 -*-
-""" Der Stats Daemon berechnet, ja, wie der Name schon sagt Statistiken ;) """
 
-from multiprocessing import Pool, Process
-import time
+import sys, os
 import logging
-from datetime import datetime, timedelta
+import ConfigParser
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.sql import select
 import noodle.model as model
 
 
-import ConfigParser
-config = ConfigParser.SafeConfigParser()
-#config.read('development.ini')
-config.read('production.ini')
-url = config.get('app:main','sqlalchemy.url',raw=True)
-if not url: raise
-
 def calculateShare(host_id):
     session = model.DBSession()
     conn = engine.connect()
     host = session.query(model.host).filter(model.host.id == host_id).one()
-    logging.info("begin host " + str(host.name))
     
     sharesize = 0
     
@@ -33,59 +23,34 @@ def calculateShare(host_id):
     
     host.sharesize = sharesize
     session.commit()
-    return ("host " + str(host.name) + " done")
-
-def debug(host_id):
-    """ setup the db connection for the worker """
-    import sqlalchemy
-    from sqlalchemy.orm import sessionmaker, scoped_session
-    import noodle.model as model
-    
-    verbose = False
-    engine = sqlalchemy.create_engine(url, echo=verbose)
-    model.maker = sessionmaker(autoflush=False, autocommit=False, extension=model.MySessionExtension())
-    model.DBSession = scoped_session(model.maker)
-    model.init_model(engine)
-    model.metadata.create_all(engine)
-    calculateShare(host_id)
-    
-def report(value):
-    logging.info(value)
-
-def setupProcess():
-    """ setup the db connection for the worker """
-    import sqlalchemy
-    from sqlalchemy.orm import sessionmaker, scoped_session
-    import noodle.model as model
-    
-    verbose = False
-    engine = sqlalchemy.create_engine(url, echo=verbose)
-    model.maker = sessionmaker(autoflush=False, autocommit=False, extension=model.MySessionExtension())
-    model.DBSession = scoped_session(model.maker)
-    model.init_model(engine)
-    model.metadata.create_all(engine)
+    return
 
 
 if __name__ == '__main__':
+    # parsing the config
+    config = ConfigParser.SafeConfigParser({'here': sys.path[0]})
+    try:
+        config.read(os.path.join(sys.path[0], 'crawler.ini'))
+    except:
+        sys.exit("Could not read crawler.ini")
+    
+    sqlalchemy_url = config.get('main', 'sqlalchemy.url')
+    sqlalchemy_echo = config.getboolean('main', 'sqlalchemy.echo')
+    debug_mode = config.getboolean('main', 'debug')
     
     FORMAT = "%(asctime)-15s %(message)s"
-    logging.basicConfig(level=logging.DEBUG, format=FORMAT)
+    if debug_mode:
+        logging.basicConfig(level=logging.DEBUG, format=FORMAT)
+    else:
+        logging.basicConfig(level=logging.INFO, format=FORMAT)
     
-    logging.info("setting up worker pool")
-    pool = Pool(processes=10, initializer=setupProcess)
-    logging.info("calculating share stats per host")
-    
-    engine = sqlalchemy.create_engine(url)
+    engine = sqlalchemy.create_engine(sqlalchemy_url)
     model.maker = sessionmaker(autoflush=False, autocommit=False, extension=model.MySessionExtension())
     model.DBSession = scoped_session(model.maker)
     model.init_model(engine)
     model.metadata.create_all(engine)
-    
     session = model.DBSession()
     
     for host in session.query(model.host).all():
-        #pool.apply_async(calculateShare, [host.id], callback=report)
-        debug(host.id)
-    pool.close()
-    pool.join()
-    
+        logging.info("begin host %s - %s" % (host.ip, host.name))
+        calculateShare(host.id)
