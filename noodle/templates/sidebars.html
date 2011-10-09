@@ -35,7 +35,7 @@
   <div id="sb_quicksearch" class="sidebar">
       <h2>Schnellsuche</h2>
       <ul class="links">
-        <li py:for="i in []"><a href="${tg.url('')}"></a></li>
+        <li py:for="i in [('bla','blubb')]"><a href="${tg.url('/search?q='+i[1])}">${i[0]}</a></li>
       </ul>
   </div>
 </py:def>

@@ -82,7 +82,7 @@ class BaseColumns():
     modified = Column(DateTime, nullable=False)
 
 # Import your model modules here.
-from noodle.model.share import Host, Service, ServiceSMB, ServiceFTP, Folder, File, getShareSum
+from noodle.model.share import Host, Service, ServiceSMB, ServiceFTP, Share, Folder, File, getShareSum
 from stats import Statistic, Ping, Crawl
 #from noodle.model.meta import meta, metaAtom
 from noodle.model.pinboard import Post

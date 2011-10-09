@@ -16,4 +16,4 @@ class Pinboard(TableForm):
     
     submit_text = u'Eintrag anheften'
 
-pinboard_form = Pinboard('pinboard_form', action=url('/pinboard'))
+pinboard_form = Pinboard('pinboard_form', action=url('/pinboard'), method="POST")

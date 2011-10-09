@@ -19,6 +19,7 @@
 
 <body>
     ${sidebar_quicksearch()}
+    ${tmpl_context.search_form()}
 <!--!
     ${sidebar_top()}
   <div id="getting_started">
@@ -41,7 +42,7 @@
     </ol>
   </div>
   -->
-  <div><xi:include href="message.html" /></div>
+    <div><xi:include href="message.html" /></div>
     <div id="sharesum">Gesamt-Share: ${sharesum}</div>
   <div class="clearingdiv" />
 <!--!  <div class="notice"> Thank you for choosing TurboGears.

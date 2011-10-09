@@ -16,11 +16,19 @@ from noodle.widgets import advanced_search_form
 from noodle.lib.base import BaseController
 import noodle.model as model
 
+def queryify(query):
+    pass
+
+def search(filters):
+    q = model.DBSession.query(model.Share)
+    return q
+
 class SearchController(BaseController):
     
     @expose('noodle.templates.search_debug')
     def index(self, **kwargs):
-        return dict(page='search_debug', params=kwargs)
+        search(None)
+        return dict(page='search_debug', params=dict((k,v) for k,v in kwargs.iteritems() if v))
     
     @expose('noodle.templates.quicksearch')
     def quick(self):

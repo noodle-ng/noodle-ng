@@ -9,9 +9,12 @@ from noodle.lib.base import BaseController
 from noodle.model import DBSession, metadata, getShareSum
 from noodle import model
 
+from noodle.widgets import search_form
+
 from noodle.controllers.error import ErrorController
 from noodle.controllers.search import SearchController
 from noodle.controllers.pinboard import PinboardController
+from noodle.controllers.download import DownloadController
 
 __all__ = ['RootController']
 
@@ -38,6 +41,7 @@ class RootController(BaseController):
     # Import sub-controllers
     search = SearchController()
     pinboard = PinboardController()
+    download = DownloadController()
     
     # If no _default is defined, a standard 404 Error message is displayed
 #    @expose('noodle.templates.not_found')
@@ -51,6 +55,7 @@ class RootController(BaseController):
     @expose('noodle.templates.index')
     def index(self):
         """Handle the front-page."""
+        tmpl_context.search_form=search_form
         sharesum = getShareSum()
         return dict(page='index', sharesum=sharesum)
 

@@ -33,4 +33,4 @@ class AdvancedSearch(TableForm):
     
     submit_text = u'noodle'
 
-advanced_search_form = AdvancedSearch('advanced_search_form', action=url('/search'))
+advanced_search_form = AdvancedSearch('advanced_search_form', action=url('/search'), method="POST")
