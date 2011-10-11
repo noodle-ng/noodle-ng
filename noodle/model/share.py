@@ -18,6 +18,9 @@ audioExt = [u"mp3", u"aac", u"ogg", u"m4a", u"wav"]
 mediaExt = videoExt[:]
 mediaExt.extend(audioExt)
 
+class ParentNotFoundException(Exception):
+    pass
+
 def makePretty(value):
     ''' convert bit values in human readable form '''
     steps = [ (1024, u"KiB"), (1048576, u"MiB"), (1073741824, u"GiB"), (1099511627776, u"TiB") ]
@@ -73,10 +76,18 @@ class share(DeclarativeBase):
         return self.parent.getService()
     
     def getPath(self):
-        return unicode(self.parent.getPath()) + "/" + self.name
+        # Throws ParentNotFoundException if a database inconsistency is discovered
+        if self.parent:
+            return unicode(self.parent.getPath()) + "/" + self.name
+        else:
+            raise ParentNotFoundException("%s %s" % (self.name, self.host))
     
     def getShowPath(self):
-        return unicode(self.parent.getShowPath()) + "/" + self.name
+        if self.parent:
+            path = self.parent.getShowPath()
+        else:
+            path = u""
+        return unicode(path) + u"/" + self.name
     
     def getPrettySize(self):
         return makePretty(self.size)
@@ -138,10 +149,17 @@ class file(content):
     __mapper_args__ = {'polymorphic_identity': u'file'}
     
     def getPath(self):
-        return self.parent.getPath()
+        # Throws ParentNotFoundException if a database inconsistency is discovered
+        if self.parent:
+            return self.parent.getPath()
+        else:
+            raise ParentNotFoundException("%s %s" % (self.name, self.host))
     
     def getShowPath(self):
-        path = unicode(self.parent.getShowPath()) + "/" + self.name
+        if self.parent:
+            path = unicode(self.parent.getShowPath()) + "/" + self.name
+        else:
+            path = u""
         if self.extension != None:
             return unicode(path + "." + self.extension)
         else:

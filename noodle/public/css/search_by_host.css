@@ -17,6 +17,17 @@ a:hover {
 	font-weight: bold;
 }
 
+.parent_not_found {
+    text-decoration: none;
+	color: #FF0000;
+}
+.parent_not_found:before {
+    text-decoration: none;
+    font-weight: bold;
+	color: #FF0000;
+	content: " !";
+}
+
 #searchbox {
 	text-align: center;
 }

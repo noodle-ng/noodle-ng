@@ -14,7 +14,7 @@ import noodle.widgets.search_form as search_form
 from noodle.lib.utils import pingSMB
 
 import noodle.model.share as s
-from noodle.model.share import audioExt, videoExt, mediaExt
+from noodle.model.share import audioExt, videoExt, mediaExt, ParentNotFoundException
 from noodle.lib.utils import ipToInt, intToIp
 
 from noodle.model.pinboard import post
@@ -198,7 +198,10 @@ class RootController(BaseController):
         for host in hosts:
             for folderid in q.filter(s.share.host_id == host.id).from_self(s.share.parent_id).distinct()[:cutoff]: # cause the content.host value is only set for the first level we go for the id
                 folder = DBSession.query(s.share).filter(s.share.id == folderid[0]).first()
-                path = generatePath(folder, userAgent)
+                try:
+                    path = generatePath(folder, userAgent)
+                except ParentNotFoundException as e:
+                    path = None
                 folder.path = path
                 folder.showpath = folder.getShowPath()
                 folder.resultset =[]
@@ -252,9 +255,12 @@ class RootController(BaseController):
             # get path to file with ID id from database
             item = DBSession.query(s.share).filter(s.share.id == id).one()
             host = item.getHost()
-            service = item.getService()
-            filename = str( item.getShowPath().split("/")[-1] )
-            
+            try:
+                service = item.getService()
+                filename = str( item.getShowPath().split("/")[-1] )
+            except:
+                flash("Es trat ein Fehler im proxyDownloader auf, bitte melde ihn.", status="error")
+            	redirect(request.referrer)
             if service.username and service.username != "anonymous":
                 # uri = "smb://username:password@hostip/path/to/file"
                 uri = u"smb://%s:%s@%s%s" % ( service.username, service.password, host.ip, item.getShowPath() )
@@ -266,7 +272,8 @@ class RootController(BaseController):
             f = smbfileapp.FileApp(uri)
             return forward(f)
         else: #proxyDl not enabled
-            return "<p><strong>proxyDownloader is (currently) not available on this system!</strong><br /><em>Sorry.</em></p>\n"
+            flash("Der proxyDownloader ist gerade nicht aktiviert, sorry!", status="error")
+            redirect(request.referrer)
     
     @expose('noodle.templates.pinboard')
     def pinboard(self, author=None, text=None, offset=0, length=20):

@@ -53,7 +53,10 @@
 					</div>
 					-->
 					<div id="host_fl_folder_caption">
-						<a id="sharename" href="${result.path}">
+						<a py:if="result.path is not None" id="sharename" href="${result.path}">
+							${result.showpath}
+						</a>
+						<a py:if="result.path is None" class="parent_not_found" title="Hier trat ein Fehler in den Suchergebnissen auf, bitte melde Ihn.">
 							${result.showpath}
 						</a>
 					</div>
@@ -64,7 +67,10 @@
 							<div id="host_fl_folder_contents_item_size">
 								${item.prettySize}
 							</div>
-							<a id="host_fl_folder_contents_item_caption" href="${tg.url( '/proxyDownload?id=' + str(item.id) )}">
+							<a py:if="result.path is not None" id="host_fl_folder_contents_item_caption" href="${tg.url( '/proxyDownload?id=' + str(item.id) )}">
+								${item.showname}
+							</a>
+							<a py:if="result.path is None" class="parent_not_found" id="host_fl_folder_contents_item_caption" title="Hier trat ein Fehler in den Suchergebnissen auf, bitte melde Ihn.">
 								${item.showname}
 							</a>
 						</div>
