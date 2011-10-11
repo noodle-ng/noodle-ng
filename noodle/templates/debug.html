@@ -8,11 +8,13 @@
 
 <head>
   <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" py:if="False"/>
-  <title>Sample Template, for looking at template locals</title>
+  <title>Debugging template</title>
 </head>
 
 <body>
-    <h1>Parameters in search query:</h1>
-    <div py:for="key,value in params.iteritems()"><pre>${key}: $value</pre></div>
+    <h1>Debugging information:</h1>
+    <div>
+        <pre py:for="k,v in params.iteritems()">${k}: ${v}</pre>
+    </div>
 </body>
 </html>

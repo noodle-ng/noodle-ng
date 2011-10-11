@@ -37,7 +37,9 @@ def hasService(host, service, timeout=1):
     """checks if the given host is online and the port
     corresponding to service is open"""
     
-    if not port[service]:
+    try:
+        port[service]
+    except KeyError:
         return False
     
     sd = sk.socket(sk.AF_INET, sk.SOCK_STREAM)

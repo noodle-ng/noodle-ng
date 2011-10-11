@@ -39,7 +39,7 @@ class DatabaseSession():
         event.listen(self.session, "before_commit", update_timestamps)
         event.listen(self.session, "before_flush", update_timestamps)
 
-    
+    #TODO: Move as classmethod to model
     def getHost(self, ip, hostname):
         """Get the host for the given ip
         
@@ -64,6 +64,7 @@ class DatabaseSession():
                 host.name = unicode(hostname)
         return host
     
+    #TODO: Move as classmethod to model
     def getService(self, host, type, username, password):
         """Get a service for a given host, type and credentials
         

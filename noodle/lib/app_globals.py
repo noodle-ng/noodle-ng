@@ -14,5 +14,8 @@ class Globals(object):
     """
 
     def __init__(self):
-        """Do nothing, by default."""
-        pass
+        """Initialize global variables"""
+        self.quicksearch = [('dns320','host:dns320')]
+        self.title = "Noodle NG"
+        self.version = "1.5-alpha"
+        self.subtitle = "File search engine"

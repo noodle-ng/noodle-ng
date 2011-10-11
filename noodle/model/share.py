@@ -7,6 +7,7 @@
 #TODO: Put setting of last_update into generic model handling to avoid having to set it everytime
 #TODO: Convention in CakePHP framework is : created, modified fields are automatically set and updated
 #      -> first_seen = created, last_update = modified
+#TODO: classmethods
 
 import logging
 from datetime import datetime
@@ -250,10 +251,12 @@ class Service(Folderish):
 
 class ServiceSMB(Service):
     #TODO: Docstrings
+    short_type = "smb"
     __mapper_args__ = {'polymorphic_identity': u'serviceSMB'}
 
 class ServiceFTP(Service):
     #TODO: Docstrings
+    short_type = "ftp"
     __mapper_args__ = {'polymorphic_identity': u'serviceFTP'}
 
 ###############################################################################
@@ -274,6 +277,12 @@ class Host(BaseColumns, DeclarativeBase):
         self.ip = ip
         if name:
             self.name = name
+    
+    #TODO:
+    @classmethod
+    def by_ip(cls, ip, hostname):
+        #TODO: Docstrings
+        pass
     
     #@property
     def getPrettyShareSize(self):

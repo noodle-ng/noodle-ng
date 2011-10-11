@@ -11,7 +11,7 @@
     <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"
           py:attrs="dict(content='%s; charset=%s' % (response.content_type, response.charset))" />
 <!--!<title py:if="False">Your title goes here</title>-->
-    <title>${tg.config.title}</title>
+    <title>${g.title}</title>
     <meta py:replace="select('*')"/>
     <link rel="stylesheet" type="text/css" media="screen" href="${tg.url('/css/style.css')}" />
 <!--!<link rel="stylesheet" type="text/css" media="screen" href="${tg.url('/css/admin.css')}" />-->
@@ -43,6 +43,10 @@
     </py:with>
     <div py:replace="select('*|text()')"/>
     <!-- End of main_content -->
+<!--! <div py:if="config.debug">
+      <div py:if="isset(query)">${query}</div>
+      <div py:if="isset(kwargs)">${kwargs}</div>
+    </div> -->
     ${footer()}
   </div>
 </body>

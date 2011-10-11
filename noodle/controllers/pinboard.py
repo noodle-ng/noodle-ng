@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Sample controller module"""
+"""Pinboard controller module"""
 
 from datetime import datetime
 
@@ -10,21 +10,22 @@ from tg import expose, tmpl_context, flash
 # third party imports
 #from tg.i18n import ugettext as _
 #from repoze.what import predicates
-
-from noodle.widgets import pinboard_form
-
 from webhelpers import paginate
 
 # project specific imports
 from noodle.lib.base import BaseController
 from noodle.model import DBSession, Post
 import transaction
+from noodle.widgets import pinboard_form
 
 class PinboardController(BaseController):
+    """Handles all pinboard related functionality"""
     
     @expose('noodle.templates.pinboard')
     def index(self, page=1, author=None, text=None):
+        """Handles the pinboard page 
         
+        which handles both viewing and writing of pinboard entries"""
         if author and text:
             try:
                 # create new post

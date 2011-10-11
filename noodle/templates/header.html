@@ -4,8 +4,9 @@
 <py:def function="header">
   <div id="header">
     <h1>
-      ${tg.config.title} ${tg.config.version}
-      <span py:if="hasattr(tg.config,'subtitle') and tg.config.subtitle" class="subtitle">${tg.config.subtitle}</span>
+      <!--! g is shortcut for app_globals -->
+      <a href="${url('/')}">${g.title} ${g.version}</a>
+      <span py:if="g.subtitle" class="subtitle">${g.subtitle}</span>
 <!--!    Welcome to TurboGears 2
         <span class="subtitle">The Python web metaframework</span>-->
     </h1>

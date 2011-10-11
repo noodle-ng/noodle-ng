@@ -33,14 +33,18 @@ base_config.renderers.append('genshi')
 # you should try to use this renderer instead.
 # warning: for the moment chameleon does not handle i18n translations
 #base_config.renderers.append('chameleon_genshi')
+
 #Configure the base SQLALchemy Setup
 base_config.use_sqlalchemy = True
-base_config.model = noodle.model
-base_config.DBSession = noodle.model.DBSession
+base_config.model = model
+base_config.DBSession = model.DBSession
+
+#------------------------------------------------------------------------------
+# Deprecated, these are now in app_globals
 
 # Register handler for global template variables
-base_config.variable_provider = helpers.add_global_tmpl_vars
-
-base_config.title = "Noodle NG"
-base_config.version = "2.0-alpha"
-base_config.subtitle = "File search engine"
+#base_config.variable_provider = helpers.add_global_tmpl_vars
+# Basic global values
+#base_config.title = "Noodle NG"
+#base_config.version = "1.5-alpha"
+#base_config.subtitle = "File search engine"
