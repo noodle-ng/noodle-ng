@@ -15,8 +15,6 @@ from noodle import model
 
 __all__ = ['setup_db', 'teardown_db', 'TestController', 'url_for']
 
-#TODO: Everything
-
 def setup_db():
     """Method used to build a database"""
     engine = config['pylons.app_globals'].sa_engine 

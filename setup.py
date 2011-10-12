@@ -27,13 +27,15 @@ if sys.version_info[:2] == (2,4):
 
 setup(
     name='Noodle-NG',
-    version='0.1',
-    description='',
-    author='',
-    author_email='',
-    #url='',
+    version='1.5',
+    description='File search engine',
+    long_description='Noodle is a web search engine for local smb/cifs network shares (Windows/Samba).',
+    author='The Noodle Developers',
+    author_email='noodle-ng@googlegroups.com',
+    url='https://code.google.com/p/noodle-ng/',
+    license="GPL-3",
     install_requires=[
-        "TurboGears2 >= 2.1.2",
+        "TurboGears2 >= 2.1.3",
         "Genshi",
         "zope.sqlalchemy >= 0.4",
         "repoze.tm2 >= 1.0a5",

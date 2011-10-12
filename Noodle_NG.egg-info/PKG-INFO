@@ -1,10 +1,10 @@
 Metadata-Version: 1.0
 Name: Noodle-NG
-Version: 0.1dev
-Summary: UNKNOWN
-Home-page: UNKNOWN
-Author: UNKNOWN
-Author-email: UNKNOWN
-License: UNKNOWN
-Description: UNKNOWN
+Version: 1.5dev-r176
+Summary: File search engine
+Home-page: https://code.google.com/p/noodle-ng/
+Author: The Noodle Developers
+Author-email: noodle-ng@googlegroups.com
+License: GPL-3
+Description: Noodle is a web search engine for local smb/cifs network shares (Windows/Samba).
 Platform: UNKNOWN
