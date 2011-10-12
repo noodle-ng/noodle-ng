@@ -22,8 +22,20 @@ testpkgs=['WebTest >= 1.2.3',
                'wsgiref',
                'repoze.who-testutil >= 1.0.1',
                ]
+install_requires=[
+    "TurboGears2 >= 2.1.3",
+    "Genshi",
+    "zope.sqlalchemy >= 0.4",
+    "repoze.tm2 >= 1.0a5",
+    "sqlalchemy >= 0.7",
+    "tw.forms",
+    ]
+
 if sys.version_info[:2] == (2,4):
     testpkgs.extend(['hashlib', 'pysqlite'])
+    install_requires.extend(['hashlib', 'pysqlite'])
+
+print install_requires
 
 setup(
     name='Noodle-NG',
@@ -34,17 +46,10 @@ setup(
     author_email='noodle-ng@googlegroups.com',
     url='https://code.google.com/p/noodle-ng/',
     license="GPL-3",
-    install_requires=[
-        "TurboGears2 >= 2.1.3",
-        "Genshi",
-        "zope.sqlalchemy >= 0.4",
-        "repoze.tm2 >= 1.0a5",
-        "sqlalchemy >= 0.7",
-        "tw.forms",
-        ],
     setup_requires=["PasteScript >= 1.7"],
     paster_plugins=['PasteScript', 'Pylons', 'TurboGears2'],
     packages=find_packages(exclude=['ez_setup']),
+    install_requires=install_requires,
     include_package_data=True,
     test_suite='nose.collector',
     tests_require=testpkgs,
