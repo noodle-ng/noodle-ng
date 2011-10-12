@@ -48,7 +48,8 @@
 
 <h3>Neuen Eintrag erstellen</h3>
 <div>
-    <div py:replace="tmpl_context.form()">Pinboard Form</div>
+    <!--! tmpl_context == c -->
+    <div py:replace="c.form()">Pinboard Form</div>
 </div>
 
 <h3>Einträge ansehen</h3>

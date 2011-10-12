@@ -2,9 +2,10 @@
 """Pinboard controller module"""
 
 from datetime import datetime
+from random import randrange
 
 # turbogears imports
-from tg import expose, tmpl_context, flash
+from tg import expose, tmpl_context, flash, redirect, url
 #from tg import redirect, validate, flash
 
 # third party imports
@@ -37,12 +38,32 @@ class PinboardController(BaseController):
                 transaction.commit()
             except:
                 transaction.abort()
-                flash("Eintrag konnte nicht erstellt werden!", status="error")
+                flash(u"Eintrag konnte nicht erstellt werden!", status="error")
             else:
-                flash("Eintrag erstellt!", status="ok")
+                flash(u"Eintrag erstellt!", status="ok")
         
         posts = DBSession.query(Post).order_by(Post.date.desc())
         currentPage = paginate.Page(posts, page, items_per_page=20)
         
         tmpl_context.form = pinboard_form
         return dict(page="pinboard", posts=currentPage.items, currentPage=currentPage)
+
+    @expose()
+    def fill(self, num=25, author="Dummy"):
+        dummytext = [u"Lorem ipsum...", u"Foo bar, foo, foo, bar, foobar, foo bar foo foofoo bar foobar", 
+                     u"Wer andern eine Bratwurst brät, der hat ein Bratwurstbratgerät."]
+        try:
+            num = int(num)
+            for i in range(num):
+                newpost = Post()
+                newpost.author = author
+                newpost.text = dummytext[randrange(0, len(dummytext))]
+                newpost.date = datetime.now()
+                DBSession.add(newpost)
+            transaction.commit()
+        except Exception as e:
+            transaction.abort()
+            flash(u"Dummy-Einträge konnten nicht erstellt werden: %s" % e, status="error")
+        else:
+            flash(u"%d Dummy-Einträge erstellt!" % num, status="ok")
+        redirect(url('/pinboard'))
