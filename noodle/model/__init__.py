@@ -60,17 +60,19 @@ def init_model(engine):
     #mapper(Reflected, t_reflected)
 
 
-def update_timestamps(session, flush_context=None, instances=None):
+def before_commit(session, flush_context=None, instances=None):
     #TODO: Docstring
     for instance in session.new:
         try:
             instance.created = datetime.now()
             instance.modified = datetime.now()
+            instance.host_id = instance.getHost().id
         except:
             pass
     for instance in session.dirty:
         try:
             instance.modified = datetime.now()
+            instance.host_id = instance.getHost().id
         except:
             pass
     for instance in session.deleted:
@@ -86,5 +88,6 @@ from noodle.model.share import Host, Service, ServiceSMB, ServiceFTP, Share, Fol
 from stats import Statistic, Ping, Crawl
 #from noodle.model.meta import meta, metaAtom
 from noodle.model.pinboard import Post
+from noodle.model.search import search
 
-event.listen(DBSession, "before_commit", update_timestamps)
+event.listen(DBSession, "before_commit", before_commit)

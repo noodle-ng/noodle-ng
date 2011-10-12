@@ -12,7 +12,7 @@ from sqlalchemy import create_engine, event
 
 from noodle.lib.utils import ipToInt, intToIp, hasService, getHostAndAddr, urlSplit, urlUnsplit
 import noodle.model as model
-from noodle.model import Host, Folder, File, Service, ServiceSMB, ServiceFTP, Crawl, update_timestamps
+from noodle.model import Host, Folder, File, Service, ServiceSMB, ServiceFTP, Crawl, before_commit
 
 log = logging.getLogger("DatabaseSession")
 
@@ -36,8 +36,8 @@ class DatabaseSession():
         
         # Register custom hooks
         
-        event.listen(self.session, "before_commit", update_timestamps)
-        event.listen(self.session, "before_flush", update_timestamps)
+        event.listen(self.session, "before_commit", before_commit)
+        event.listen(self.session, "before_flush", before_commit)
 
     #TODO: Move as classmethod to model
     def getHost(self, ip, hostname):

@@ -14,23 +14,18 @@ from tg import expose
 from noodle.lib.base import BaseController
 import noodle.model as model
 
-def queryify(query):
-    pass
-
-def search(filters):
-    q = model.DBSession.query(model.Share)
-    return q
 
 class SearchController(BaseController):
     """Handles all the search related functionality"""
     
     @expose('noodle.templates.debug')
-    def index(self, **kwargs):
+    def index(self, query, **kwargs):
         #TODO: Docstring
-        search(None)
-#        return dict(page='debug', params=dict((k,v) for k,v in kwargs.iteritems() if v))
-        return dict(page='debug', params=kwargs)
-
+        kwargs['query'] = query
+        s =  model.search(query)
+        return dict(page='debug', params=kwargs, s=s)
+        #return dict(page='debug', params=dict((k,v) for k,v in kwargs.iteritems() if v))
+    
     def by_file(self):
         pass
     

@@ -63,6 +63,7 @@ class Share(BaseColumns, DeclarativeBase):
     date = Column(DateTime)
     #meta = relation("meta", uselist=False, backref="share")
     type = Column(Unicode(20), nullable=False)
+    
     __mapper_args__ = {'polymorphic_on': type}
     
     def __init__(self):
@@ -219,7 +220,7 @@ class File(Content):
         #TODO: Docstrings
         path = unicode(self.parent.getShowPath()) + "/" + self.name
         if self.extension != None:
-            return unicode(path + "." + self.extension)
+            return unicode(path + self.extension)
         else:
             return unicode(path)
 
@@ -266,7 +267,7 @@ class Host(BaseColumns, DeclarativeBase):
     __tablename__ = 'hosts'
     ip = Column(BigInteger, nullable=False, unique=True)
     name = Column(Unicode(256))
-    #TODO: Depcrecate crawl_time here, instead move it to statistics
+    #TODO: Deprecate crawl_time here, instead move it to statistics
     crawl_time = Column(Float)
     sharesize = Column(BigInteger)
     services = relationship(Service, backref="host")
