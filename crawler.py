@@ -18,8 +18,7 @@ begin working based on the information it finds there.
 #TODO: Propably not use transaction in the crawler
 
 #TODO: CleanUp imports
-import sys, os, logging
-import multiprocessing
+import sys, os, logging, multiprocessing
 from ConfigParser import SafeConfigParser
 
 from noodle.lib.utils import ipToInt, intToIp, hasService, getHostAndAddr, urlSplit, urlUnsplit
@@ -136,7 +135,7 @@ def main():
     """Runs the crawler"""
     global debug
     
-    print "BETA BETA BETA BETA BETA BETA BETA BETA BETA BETA"
+    print "GAMMA GAMMA GAMMA GAMMA GAMMA GAMMA GAMMA!"
     
     locations = parse_locations()
     
