@@ -2,6 +2,8 @@
 """Search controller module"""
 #TODO: Paging tutorial: http://turbogears.org/2.1/docs/modules/thirdparty/webhelpers_paginate.html#paginate-a-module-to-help-split-up-lists-or-results-from-orm-queries
 
+import time
+
 # turbogears imports
 from tg import expose
 #from tg import redirect, validate, flash
@@ -25,6 +27,25 @@ class SearchController(BaseController):
         s =  model.search(query)
         return dict(page='debug', params=kwargs, s=s)
         #return dict(page='debug', params=dict((k,v) for k,v in kwargs.iteritems() if v))
+    
+    @expose('noodle.templates.search_test')
+    def test(self):
+        results = []
+        for query in ["hello world host:santa ext:clause ext:reindeer",
+                      "du :sau ext:",
+                      "greater:2 greater:3",
+                      "greater: greater:2",
+                      "before:12.12.2012",
+                      "host:dns320 host:servant"]:
+            try:
+                start = time.time()
+                s = model.search(query)
+                stop = time.time()
+            except Exception as e:
+                results.append((query,0,e))
+            else:
+                results.append((query,stop-start,[]))
+        return dict(page='test', results=results)
     
     def by_file(self):
         pass

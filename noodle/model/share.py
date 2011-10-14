@@ -29,11 +29,40 @@ mediaExt = videoExt + audioExt
 def getShareSum():
     #TODO: Docstring
     try:
-        sharesum = DBSession.query(func.sum(Host.sharesize)).one()[0]
+        sharesum = DBSession.query(func.sum(Host.sharesize)).one()[0] or 0
     except Exception as e:
         logging.warn(e)
         sharesum = 0
-    return makePretty(sharesum)
+    return humanize(sharesum)
+
+def humanize(size, binary=True):
+    '''Convert a file size to human-readable form.
+
+    Keyword arguments:
+    size -- file size in bytes
+    binary -- if True (default), use multiplier of 1024
+              if False, use multiplier of 1000
+
+    Returns: string
+
+    This function is taken form "Dive into Python 3" by Mark Pilgrim,
+    http://diveintopython3.ep.io/your-first-python-program.html
+    Thanks for that
+    '''
+    
+    suffixes = {1000: ['KB',  'MB',  'GB',  'TB',  'PB',  'EB',  'ZB',  'YB'],
+                1024: ['KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB']}
+    
+    if size < 0:
+        raise ValueError('number must be non-negative')
+
+    multiplier = 1024 if binary else 1000
+    for suffix in suffixes[multiplier]:
+        size /= multiplier
+        if size < multiplier:
+            return '%.1f %s' % (size, suffix)
+
+    raise ValueError('number too large')
 
 def makePretty(value):
     ''' convert bit values in human readable form '''
