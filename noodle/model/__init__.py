@@ -21,7 +21,7 @@ DeclarativeBase = declarative_base()
 
 # There are two convenient ways for you to spare some typing.
 # You can have a query property on all your model classes by doing this:
-# DeclarativeBase.query = DBSession.query_property()
+DeclarativeBase.query = DBSession.query_property()
 # Or you can use a session-aware mapper as it was used in TurboGears 1:
 # DeclarativeBase = declarative_base(mapper=DBSession.mapper)
 
@@ -91,3 +91,4 @@ from noodle.model.pinboard import Post
 from noodle.model.search import search
 
 event.listen(DBSession, "before_commit", before_commit)
+event.listen(DBSession, "before_flush", before_commit)

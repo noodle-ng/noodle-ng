@@ -23,7 +23,7 @@ class Statistic(BaseColumns, DeclarativeBase):
 
 class Ping(Statistic):
     #TODO: Docstrings
-    value = Column(Float, nullable=True)
+    ping = Column(Float, nullable=True)
     __mapper_args__ = {'polymorphic_identity': u'ping'}
     
     def __init__(self, host=None, value=None):

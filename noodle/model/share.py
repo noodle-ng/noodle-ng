@@ -4,8 +4,8 @@
 #TODO: Unicode awareness
 #TODO: Reconcile all functions here to new model structure
 #TODO: Probably use isFolder or isFile functions instead of getMediaType
-#TODO: Put setting of last_update into generic model handling to avoid having to set it everytime
-#TODO: Convention in CakePHP framework is : created, modified fields are automatically set and updated
+#Done: Put setting of last_update into generic model handling to avoid having to set it everytime
+#Done: Convention in CakePHP framework is : created, modified fields are automatically set and updated
 #      -> first_seen = created, last_update = modified
 #TODO: classmethods
 

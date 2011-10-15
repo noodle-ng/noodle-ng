@@ -10,16 +10,16 @@ in the Noodle-NG application.
 @author: moschlar
 '''
 
-#TODO: Some keywords may be specified multiple times, e.g. host, ext, type?, (hostel)
+#DONE: Some keywords may be specified multiple times, e.g. host, ext, type?, (hostel)
+#TODO: What if someone searches for "Kobe.avi"
 
-import sys
 from datetime import datetime
 
 from sqlalchemy.orm import sessionmaker, scoped_session, exc
 from sqlalchemy import create_engine, event
 
 import noodle.model
-from noodle.model import DBSession as s, Content, Host, File, Folder
+from noodle.model import Content, Host, File, Folder, DBSession as s
 
 #===============================================================================
 # magicwords = ["host", "type", "ext", "greater", "smaller", "before", "after", "found_before", "found_after", "hostel"]
@@ -76,12 +76,15 @@ def searchQuery(query):
     #TODO: Docstring
     query = compileQuery(query)
     
-    q = s.query(Content)
+    #q = s.query(Content)
+    q = Content.query
     if "type" in query and query["type"]:
         if query["type"] in ["file"] + extensions.keys():
-            q = s.query(File)#.filter(Content.type == "file")
+            #q = s.query(File)#.filter(Content.type == "file")
+            q = File.query
         elif query["type"] == "folder":
-            q = s.query(Folder)#.filter(Content.type == "folder")
+            #q = s.query(Folder)#.filter(Content.type == "folder")
+            q = Folder.query
     
     # First perform simple numerical filters
     if "greater" in query and query["greater"]:
@@ -124,6 +127,7 @@ def searchQuery(query):
             hosts = []
             for host in query["host"]:
                 hosts.extend((s.query(Host.id).filter(Host.name.like('%%%s%%' % host)).all()))
+                #hosts.extend((Host.query.filter(Host.name.like('%%%s%%' % host)).all()))
             q = q.filter(Content.host_id.in_([host.id for host in hosts]))
         except KeyError as e:
             print e
@@ -137,6 +141,11 @@ def searchQuery(query):
     
     if len(ext) > 0:
         q = q.filter(File.extension.in_(ext))
+    
+    if "query" in query and query["query"]:
+        for word in query["query"]:
+            #TODO: Improve this
+            q = q.filter(Content.name.like('%%%s%%' % word))
     
     return q
 
