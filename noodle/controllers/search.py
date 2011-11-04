@@ -30,6 +30,11 @@ class SearchController(BaseController):
     
     @expose('noodle.templates.search_test')
     def test(self):
+        """Perform some hardcoded search queries
+        
+        Displays plain search results and the time required for each.
+        Kind of simple benchmarking.
+        """
         results = []
         for query in ["hello world host:santa ext:clause ext:reindeer",
                       "du :sau ext:",
@@ -48,13 +53,17 @@ class SearchController(BaseController):
         return dict(page='test', results=results)
     
     def by_file(self):
+        #TODO
         pass
     
     def by_host(self):
+        #TODO
         pass
     
     def json(self):
+        #TODO
         pass
     
     def xml(self):
+        #TODO
         pass

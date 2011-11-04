@@ -6,12 +6,13 @@ from sqlalchemy.orm import mapper, relation
 from sqlalchemy import Table, ForeignKey, Column
 from sqlalchemy.types import Integer, Unicode, DateTime
 
+# TODO: Drop this import, so that genshi isn't needed for just using the crawler
 from genshi.input import HTML
 
 from noodle.model import DeclarativeBase, metadata, DBSession
 
 class Post(DeclarativeBase):
-    ''' a pinboard post entry '''
+    '''A pinboard post entry'''
     __tablename__ = 'pinboard'
     id = Column(Integer, primary_key=True)
     date = Column(DateTime, nullable=False)
@@ -19,6 +20,7 @@ class Post(DeclarativeBase):
     text = Column(Unicode(2048), nullable=False)
     
     def escape(self):
+        """Escape all potentially dangerous codes to HTML entities"""
         html_escape_table = {
             "\n": "<br />",
             "&": "&amp;",

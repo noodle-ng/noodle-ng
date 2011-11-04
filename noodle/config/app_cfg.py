@@ -39,12 +39,3 @@ base_config.use_sqlalchemy = True
 base_config.model = model
 base_config.DBSession = model.DBSession
 
-#------------------------------------------------------------------------------
-# Deprecated, these are now in app_globals
-
-# Register handler for global template variables
-#base_config.variable_provider = helpers.add_global_tmpl_vars
-# Basic global values
-#base_config.title = "Noodle NG"
-#base_config.version = "1.5-alpha"
-#base_config.subtitle = "File search engine"

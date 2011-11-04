@@ -1,16 +1,18 @@
 '''
 Created on 12.09.2011
 
+Static testing of the crawling stuff
+
 @author: moschlar
 '''
 import os, sys, time, logging, traceback
 from noodle.lib.utils import urlSplit
-#from crawlerclass import CrawlerSMB, CrawlerFTP
+
 from ConfigParser import SafeConfigParser
-from crawl.smb import SMBHost
-from crawl.database import DatabaseSession
-from crawl import host_type
-from crawl.crawler import Crawler
+from crawling.smb import SMBHost
+from crawling.database import DatabaseSession
+from crawling import host_type
+from crawling.crawler import Crawler
 
 config_file = "crawler.ini"
 

@@ -35,8 +35,6 @@ if sys.version_info[:2] == (2,4):
     testpkgs.extend(['hashlib', 'pysqlite'])
     install_requires.extend(['hashlib', 'pysqlite'])
 
-print install_requires
-
 setup(
     name='Noodle-NG',
     version='1.5',

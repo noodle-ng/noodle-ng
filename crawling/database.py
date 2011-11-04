@@ -23,7 +23,11 @@ class DatabaseSession():
     """DatabaseSession performs all database operations"""
     
     def __init__(self, url, echo=False):
-        #TODO: Docstring
+        """Initialize DatabaseSession
+        
+        Especially important is to register the commit and flush hooks
+        to get correct timestamp and host values
+        """
     #    engine = sqlalchemy.create_engine(sqlalchemy_url, echo=sqlalchemy_echo)
     #    model.maker = sessionmaker(autoflush=False, autocommit=False, extension=model.MySessionExtension())
     #    model.DBSession = scoped_session(model.maker)
@@ -35,7 +39,6 @@ class DatabaseSession():
         self.session = model.DBSession
         
         # Register custom hooks
-        
         event.listen(self.session, "before_commit", before_commit)
         event.listen(self.session, "before_flush", before_commit)
 
@@ -84,6 +87,7 @@ class DatabaseSession():
             raise
         return service
     
+    #TODO: Move as classmethod to model
     def newStat(self, host, startTime, endTime, s, n, u, d):
         """Make a new Stat object for a crawl"""
         crawl = Crawl(endTime-startTime,s,n,u,d)

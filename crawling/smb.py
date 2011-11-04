@@ -88,6 +88,7 @@ class SMBHost(Host):
         except Exception as e:
             log.warning("Could not get directory entries in %s: %s" % (self.uri(path), e))
             raise
+        #TODO: Should return namedtuple onewalk like stat does
         return (dirnames, filenames)
     
     def listdir(self, dir):

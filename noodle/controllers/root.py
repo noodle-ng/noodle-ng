@@ -54,7 +54,8 @@ class RootController(BaseController):
     @expose('noodle.templates.index')
     def index(self):
         """Handle the front-page."""
-        tmpl_context.search_form=search_form
+        # tmpl_context is used to get the form into the template
+        tmpl_context.search_form = search_form
         sharesum = getShareSum()
         return dict(page='index', sharesum=sharesum)
     
@@ -87,5 +88,6 @@ class RootController(BaseController):
         # Too specific for uni-mainz, propably okay if it was called superdomain or something similar
         #TODO: classmethod
         hostels = set([host.name.split('.')[1] for host in model.DBSession.query(model.Host).all()])
+        # tmpl_context is used to get the form into the template
         tmpl_context.form = advanced_search_form
         return dict(page='advanced_search', hostels=hostels)

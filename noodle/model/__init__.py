@@ -61,7 +61,10 @@ def init_model(engine):
 
 
 def before_commit(session, flush_context=None, instances=None):
-    #TODO: Docstring
+    """Before commit hook to perform database consistency tasks
+    
+    Sets create and modified timestamps and tries to get the host id
+    """
     for instance in session.new:
         try:
             instance.created = datetime.now()
@@ -79,6 +82,7 @@ def before_commit(session, flush_context=None, instances=None):
         pass
 
 class BaseColumns():
+    """Base mixin provides columns that shall be in all tables"""
     id = Column(Integer, primary_key=True)
     created = Column(DateTime, nullable=False)
     modified = Column(DateTime, nullable=False)
@@ -90,5 +94,6 @@ from stats import Statistic, Ping, Crawl
 from noodle.model.pinboard import Post
 from noodle.model.search import search
 
+# Register hooks for committing and flushing
 event.listen(DBSession, "before_commit", before_commit)
 event.listen(DBSession, "before_flush", before_commit)

@@ -15,7 +15,13 @@ class Globals(object):
 
     def __init__(self):
         """Initialize global variables"""
-        self.quicksearch = [('dns320','host:dns320')]
+        
+        # Since these variables aren't meant to be changed in configuration
+        # I'd like to keep them set here globally
         self.title = "Noodle NG"
         self.version = "1.5-alpha"
         self.subtitle = "File search engine"
+        
+        # The predefined quicksearches should propably be
+        # configured in the .ini files
+        self.quicksearch = [('dns320','host:dns320')]

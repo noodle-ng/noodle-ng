@@ -109,6 +109,7 @@ def setup_worker():
 def crawl(host, type, credentials=None, initializer=None):
     """Starts the crawling process for one host"""
     if initializer:
+        # We only use this if no multiprocessing is used
         initializer()
     
     hostname, ip = getHostAndAddr(host)

@@ -1,6 +1,10 @@
 '''
 Created on 21.09.2011
 
+This module is full of assertions for debugging because there were
+some inconsistencies while developing.
+They should be safely removable now for more productive use.
+
 @author: moschlar
 '''
 #TODO: Docstring
@@ -20,7 +24,7 @@ class Crawler():
     """
     
     def __init__(self, databasesession, host, extension=None):
-        #TODO: Docstring
+        """Initialize crawler object"""
         
         self.db = databasesession
         self.session = self.db.session
@@ -199,7 +203,7 @@ class Crawler():
         assert dir in self.session
         return dir
         
-    #TODO: Find name for first function
+    #TODO: Find name for first function: "start" or "run"
     def start(self):
         #TODO: Docstring
         self.run()

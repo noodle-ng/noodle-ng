@@ -19,3 +19,5 @@ from noodle.lib.base import BaseController
 #tg.controllers.WSGIAppController
 from tg.controllers import WSGIAppController
 
+#TODO: Test here what WSGIAppController can do 
+# and if we could use it instead of the plain webob

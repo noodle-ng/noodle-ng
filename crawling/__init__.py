@@ -11,7 +11,7 @@ from collections import namedtuple
 
 stat = namedtuple("stat", ["mode","ino","dev","nlink","uid","gid","size","atime","mtime","ctime"])
 #TODO: Docstring
-onewalk = namedtuple("stat", ["mode","ino","dev","nlink","uid","gid","size","atime","mtime","ctime"])
+onewalk = namedtuple("onewalk", ["folders", "files"])
 #TODO: Docstring
 
 class HostNotReachableException(Exception):
@@ -29,6 +29,8 @@ class Host():
     """
     def __init__(self):
         """Initialize the Host object"""
+        # We can safely take these methods from posixpath
+        # because that's exactly how urls behave, too
         self.path_split = posixpath.split
         self.path_join = posixpath.join
         self.path_splitext = posixpath.splitext

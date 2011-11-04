@@ -42,9 +42,13 @@ class PinboardController(BaseController):
             else:
                 flash(u"Eintrag erstellt!", status="ok")
         
+        # Get posts from database
         posts = DBSession.query(Post).order_by(Post.date.desc())
+        # paginate handles all pagination-related functions, so we
+        # don't have to do it on our own
         currentPage = paginate.Page(posts, page, items_per_page=20)
         
+        # tmpl_context is used to get the form into the template
         tmpl_context.form = pinboard_form
         return dict(page="pinboard", posts=currentPage.items, currentPage=currentPage)
 

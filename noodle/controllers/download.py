@@ -29,6 +29,9 @@ class DownloadController(BaseController):
         
         Redirects to last page and flashes when there is an Exception
         """
+        # This try..catch cascade performs some checks before the file app
+        # is even loaded so that we don't waste too much time on folders
+        # or other things we can't even download
         try:
             try:
                 id = int(id)
@@ -42,8 +45,10 @@ class DownloadController(BaseController):
             if not hasService(intToIp(share.getHost().ip), share.getService().short_type):
                 raise DownloadException("Host %s is not online" % share.getHost().name)
         except DownloadException as e:
-            flash("Error: %s" % e, status="error")
+            flash(u"Error: %s" % e, status="error")
             redirect(request.referrer)
         else:
-            flash("Downloading file %d" % id, status="ok")
+            # As long as we don't have the file app here, we
+            # just say what we WOULD have downloaded ;)
+            flash(u"Downloading file %d" % id, status="ok")
             redirect(request.referrer)

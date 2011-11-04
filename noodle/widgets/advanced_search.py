@@ -8,6 +8,7 @@ from tg import url
 from tw.forms import TableForm, FieldSet, CalendarDatePicker, SingleSelectField, RadioButtonList, TextField, TextArea, Spacer, SubmitButton
 
 class AdvancedSearch(TableForm):
+    """Display the advanced search form"""
     
     type_options = ["", "audio", "video", "multimedia", "file", "folder"]
     search_mode_options = ["noodle by file", "noodle by host"]
@@ -31,6 +32,9 @@ class AdvancedSearch(TableForm):
         RadioButtonList('mode', label_text=u'Suchmodus', options=search_mode_options, default=0),
         ]
     
+    # Propably we could use the same two button approach that is used
+    # in standard search form
     submit_text = u'noodle'
 
+# Initialize form object for easier access
 advanced_search_form = AdvancedSearch('advanced_search_form', action=url('/search'), method="POST")

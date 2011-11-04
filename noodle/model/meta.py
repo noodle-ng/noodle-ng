@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """Noodle meta model"""
 
+# CURRENTLY UNUSED
+
 from sqlalchemy import *
 from sqlalchemy.orm import mapper, relation, backref
 from sqlalchemy import Table, ForeignKey, Column

@@ -8,6 +8,7 @@ from tg import url
 from tw.forms import TableForm, TextField, TextArea
 
 class Pinboard(TableForm):
+    """Display the pinboard entry form"""
     
     fields = [
         TextField('author', label_text=u'Autor'),
@@ -16,4 +17,5 @@ class Pinboard(TableForm):
     
     submit_text = u'Eintrag anheften'
 
+# Initialize form object for easier access
 pinboard_form = Pinboard('pinboard_form', action=url('/pinboard'), method="POST")
