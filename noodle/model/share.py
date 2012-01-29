@@ -126,6 +126,8 @@ class Share(BaseColumns, DeclarativeBase):
     
     def getShowPath(self):
         #TODO: Docstrings
+        if not self.parent:
+            raise Exception("%d %s has no parent :(" % (self.id, self.name))
         return unicode(self.parent.getShowPath()) + "/" + self.name
     
     def getPrettySize(self):
@@ -160,6 +162,7 @@ class Share(BaseColumns, DeclarativeBase):
             creds["password"] = ""
         return creds
     
+    host = property(getHost)
     prettySize = property(getPrettySize)
     nameWithExt = property(getNameWithExt)
     mediaType = property(getMediaType)
@@ -210,13 +213,16 @@ class Content(Share):
         Share.__init__(self, **kwargs)
         self.name = name
 
-class Folder(Folderish, Content):
+class Folder(Content, Folderish):
     #TODO: Docstrings
     __mapper_args__ = {'polymorphic_identity': u'folder'}
     
     def __init__(self, name, **kwargs):
         #TODO: Docstrings
         Content.__init__(self, name)
+    
+    def getShowName(self):
+        return self.name
 
 class File(Content):
     #TODO: Docstrings
@@ -240,7 +246,13 @@ class File(Content):
             self.size = size
         self.last_update = datetime.now()
         return
-        
+    
+    def getShowName(self):
+        if self.extension != None:
+            return unicode(self.name + self.extension)
+        else:
+            return unicode(self.name)
+    
     def getPath(self):
         #TODO: Docstrings
         return self.parent.getPath()
@@ -307,6 +319,9 @@ class Host(BaseColumns, DeclarativeBase):
         self.ip = ip
         if name:
             self.name = name
+    
+    def getHost(self):
+        return self
     
     #TODO:
     @classmethod

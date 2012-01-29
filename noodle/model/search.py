@@ -19,7 +19,7 @@ from sqlalchemy.orm import sessionmaker, scoped_session, exc
 from sqlalchemy import create_engine, event
 
 import noodle.model
-from noodle.model import Content, Host, File, Folder, DBSession as s
+from noodle.model import Share, Content, Host, File, Folder, DBSession as s
 
 #===============================================================================
 # magicwords = ["host", "type", "ext", "greater", "smaller", "before", "after", "found_before", "found_after", "hostel"]
@@ -148,6 +148,55 @@ def searchQuery(query):
             q = q.filter(Content.name.like('%%%s%%' % word))
     
     return q
+
+def search_by_host(query):
+    """Perform search for query and return host-based results
+    
+    Returns a list of Host objects which each contain a
+    list of results that contains folders which contain a
+    list of results that contains items which match the
+    search query.
+    Note that this does *not* resemble any filesystem structure
+    since it gets flattened to three levels (host -> folder -> contents)
+    
+    
+    Although the objects in these list structures are full
+    database backed objects from the model it is advised
+    to simply use the pre-generated results lists for
+    displaying search results
+    """
+    
+    query = searchQuery(query)
+    
+    hosts = []
+    # take all distinct host_ids from query result
+    for h in query.from_self(Content.host_id).distinct().all():
+        # put corresponding Host in list
+        host = s.query(Host).filter(Host.id == h.host_id).one()
+        # initialize list for subitems of host
+        host.results = []
+        
+        # get all parent_ids on this host from query result
+        for f in query.filter(Content.host_id == h.host_id).from_self(Share.parent_id).distinct():
+            # get corresponding Folder
+            folder = s.query(Share).filter(Share.id == f.parent_id).one()
+            folder.showpath = folder.getShowPath()
+            # initialize list for subitems of the folder
+            folder.results = []
+            
+            # get all entries of folder
+            for item in query.filter(Content.parent_id == folder.id).order_by(Content.name).all():
+                item.showname = item.getShowName()
+                folder.results.append(item)
+            
+            # prohibit adding empty folders
+            if len(folder.results) > 0:
+                host.results.append(folder)
+        # prohibit adding empty hosts
+        if len(host.results) > 0:
+            hosts.append(host)
+
+    return hosts
 
 def search(query):
     return searchQuery(query).all()
