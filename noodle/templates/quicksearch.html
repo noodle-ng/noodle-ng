@@ -14,7 +14,7 @@
 <body>
 <h1>Schnellsuche</h1>
     <!--! g is shortcut for app_globals -->
-    <div py:for="i in g.quicksearch"><a href="${tg.url('/search?q='+i[1])}">${i[0]}</a></div>
+    <div py:for="i in g.quicksearch"><a href="${tg.url('/search?query='+i[1])}">${i[0]}</a></div>
     ${sidebar_quicksearch()}
 </body>
 </html>
