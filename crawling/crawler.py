@@ -32,6 +32,7 @@ class Crawler():
         self.extension = extension
     
     def walker(self, database_dir, host_dir):
+        #TODO: USE A FUCKING QUEUE
         """Recursive walking function"""
         
         log.debug("Started crawling %s" % host_dir)
